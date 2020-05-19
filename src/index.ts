@@ -1,0 +1,41 @@
+import { createLogger } from 'ch-logging'
+import 'ch-node-session-handler'
+import { SessionKey } from 'ch-node-session-handler/lib/session/keys/SessionKey'
+import { SignInInfoKeys } from 'ch-node-session-handler/lib/session/keys/SignInInfoKeys'
+import { ISignInInfo, IUserProfile } from 'ch-node-session-handler/lib/session/model/SessionInterfaces'
+import { NextFunction, Request, RequestHandler, Response } from 'express'
+
+const APP_NAME = 'web-security-node'
+const logger = createLogger(APP_NAME)
+
+export interface AuthOptions {
+  returnUrl: string
+  accountWebUrl: string
+}
+
+export const authMiddleware = (options: AuthOptions): RequestHandler => (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const appName = 'CH Web Security Node'
+  const redirectURI = `${options.accountWebUrl}/signin?return_to=${options.returnUrl}`
+
+  if (!req.session) {
+    logger.debug(`${appName} - handler: Session object is missing!`)
+    return res.redirect(redirectURI)
+  }
+
+  const signInInfo: ISignInInfo = req.session.get<ISignInInfo>(SessionKey.SignInInfo) || {}
+  const signedIn: boolean = signInInfo![SignInInfoKeys.SignedIn] === 1
+  const userProfile: IUserProfile = signInInfo![SignInInfoKeys.UserProfile] || {}
+  const userId: string | undefined = userProfile?.id
+
+  if (!signedIn) {
+    logger.info(`${appName} - handler: userId=${userId}, Not signed in... Redirecting to: ${redirectURI}`)
+    return res.redirect(redirectURI)
+  }
+
+  logger.debug(`${appName} - handler: userId=${userId} authenticated successfully`)
+  next()
+}
