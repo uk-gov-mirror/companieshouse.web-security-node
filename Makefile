@@ -13,6 +13,10 @@ build:
 	npm i
 	npm run build
 
+.PHONY: lint
+lint:
+	npm run lint
+
 .PHONY: test
 test:
 	npm run test
@@ -33,4 +37,4 @@ endif
 	rm -rf $(tmpdir)
 
 .PHONY: dist
-dist: test clean package
+dist: lint test clean package
