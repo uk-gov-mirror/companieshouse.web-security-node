@@ -9,7 +9,8 @@
   "scripts": {
     "test": "mocha 'test/**/*.test.ts'",
     "build": "rm -rf ./dist; tsc;",
-    "lint": "tslint -p ."
+    "lint": "tslint -p .",
+    "sonarqube": "sonar-scanner"
   },
   "dependencies": {
     "ch-logging": "git+ssh://git@github.com/companieshouse/ch-structured-logging-node.git#a3e0dcc57f91f63803e02ceef2cc5e4038de9a19",
@@ -25,6 +26,7 @@
     "express": "^4.17.1",
     "mocha": "^7.1.2",
     "sinon": "^9.0.2",
+    "sonarqube-scanner": "^2.6.0",
     "ts-mockito": "^2.5.0",
     "ts-node": "^8.10.1",
     "tsconfig-paths": "^3.9.0",
