@@ -13,8 +13,11 @@
     "sonarqube": "sonar-scanner"
   },
   "dependencies": {
+    "@types/node-jose": "^1.1.4",
     "ch-logging": "git+ssh://git@github.com/companieshouse/ch-structured-logging-node.git#a3e0dcc57f91f63803e02ceef2cc5e4038de9a19",
-    "ch-node-session-handler": "git+ssh://git@github.com/companieshouse/node-session-handler.git#3.0.1"
+    "ch-node-session-handler": "git+ssh://git@github.com/companieshouse/node-session-handler.git#3.0.1",
+    "inversify-binding-decorators": "^4.0.0",
+    "node-jose": "^1.1.4"
   },
   "devDependencies": {
     "@types/ioredis": "^4.16.2",
