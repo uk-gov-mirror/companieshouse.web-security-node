@@ -1,7 +1,7 @@
 import 'ch-node-session-handler'
 import { Request, RequestHandler, Response } from 'express'
 
-import CompanyAuthConfig from 'app/models/companyAuthConfig'
+import { CompanyAuthConfig } from 'app/models/companyAuthConfig'
 import JwtEncryptionService from 'app/services/jwtEncryptionService'
 
 const OATH_SCOPE_PREFIX = 'https://api.companieshouse.gov.uk/company/'

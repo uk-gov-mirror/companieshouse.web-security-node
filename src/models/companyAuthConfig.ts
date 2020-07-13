@@ -1,4 +1,4 @@
-export default interface CompanyAuthConfig {
+export interface CompanyAuthConfig {
     accountUrl: string,
     companyNumber: string
     accountRequestKey: string,
