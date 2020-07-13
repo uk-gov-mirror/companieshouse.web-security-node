@@ -3,7 +3,8 @@ import { provide } from 'inversify-binding-decorators'
 import { JWE, JWK } from 'node-jose'
 import 'reflect-metadata'
 
-import { CompanyAuthConfig } from 'app/companyNumberAuthentication'
+import { CompanyAuthConfig } from 'app/index';
+
 
 interface AuthPayload {
     nonce: string,
