@@ -62,7 +62,7 @@ export const companyAuthMiddleware = (config: CompanyAuthConfig): RequestHandler
   return res.redirect(await getAuthRedirectUri(req, config, encryptionService, companyNumber))
 }
 
-async function getAuthRedirectUri(req: Request, authConfig: CompanyAuthConfig,
+export async function getAuthRedirectUri(req: Request, authConfig: CompanyAuthConfig,
                                   encryptionService: JwtEncryptionService,
                                   companyNumber?: string): Promise<string> {
 
