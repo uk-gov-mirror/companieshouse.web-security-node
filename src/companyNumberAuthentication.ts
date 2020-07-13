@@ -1,22 +1,22 @@
 import 'ch-node-session-handler'
-import { Request, RequestHandler, Response } from 'express'
+import { Request } from 'express'
 
 import { CompanyAuthConfig } from 'app/models/companyAuthConfig'
 import JwtEncryptionService from 'app/services/jwtEncryptionService'
 
 const OATH_SCOPE_PREFIX = 'https://api.companieshouse.gov.uk/company/'
 
-export const companyAuthMiddleware = (config: CompanyAuthConfig): RequestHandler => async (
-    req: Request,
-    res: Response
-) => {
-    const encryptionService = new JwtEncryptionService(config)
-    const companyNumber = config.companyNumber;
+// export const companyAuthMiddleware = (config: CompanyAuthConfig): RequestHandler => async (
+//     req: Request,
+//     res: Response
+// ) => {
+//     const encryptionService = new JwtEncryptionService(config)
+//     const companyNumber = config.companyNumber;
+//
+//     return res.redirect(await getAuthRedirectUri(req, config, encryptionService, companyNumber))
+// }
 
-    return res.redirect(await getAuthRedirectUri(req, config, encryptionService, companyNumber))
-}
-
-async function getAuthRedirectUri(req: Request, authConfig: CompanyAuthConfig,
+export async function getAuthRedirectUri(req: Request, authConfig: CompanyAuthConfig,
                                   encryptionService: JwtEncryptionService,
                                   companyNumber?: string): Promise<string> {
 
