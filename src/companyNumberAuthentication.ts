@@ -1,5 +1,5 @@
 import 'ch-node-session-handler'
-import { Request, RequestHandler, Response } from 'express'
+import { NextFunction, Request, RequestHandler, Response } from 'express'
 
 import JwtEncryptionService from 'app/encryption/jwtEncryptionService'
 
@@ -15,12 +15,14 @@ export interface CompanyAuthConfig {
 
 export const companyAuthMiddleware = (config: CompanyAuthConfig): RequestHandler => async (
     req: Request,
-    res: Response
+    res: Response,
+    next: NextFunction
 ) => {
     const encryptionService = new JwtEncryptionService(config)
     const companyNumber = config.companyNumber;
 
     return res.redirect(await getAuthRedirectUri(req, config, encryptionService, companyNumber))
+    next()
 }
 
 async function getAuthRedirectUri(req: Request, authConfig: CompanyAuthConfig,
