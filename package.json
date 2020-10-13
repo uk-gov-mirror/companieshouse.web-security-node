@@ -1,6 +1,6 @@
 {
-  "name": "web-security-node",
-  "version": "0.1.1",
+  "name": "@companieshouse/web-security-node",
+  "version": "0.0.0",
   "description": "Middleware for chs authentication",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
