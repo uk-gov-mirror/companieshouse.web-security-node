@@ -4,6 +4,9 @@
   "description": "Middleware for chs authentication",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "repository": "git@github.com:companieshouse/web-security-node.git",
   "license": "MIT",
   "scripts": {
