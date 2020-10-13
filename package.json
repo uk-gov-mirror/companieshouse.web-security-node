@@ -10,7 +10,9 @@
     "test": "mocha 'test/**/*.test.ts'",
     "build": "rm -rf ./dist; tsc;",
     "lint": "tslint -p .",
-    "sonarqube": "sonar-scanner"
+    "sonarqube": "sonar-scanner",
+    "prepublishOnly": "[ ! -d node_modules ] && npm install; tsc",
+    "postpublish": "rm -rf lib"
   },
   "dependencies": {
     "ch-logging": "git+ssh://git@github.com/companieshouse/ch-structured-logging-node.git#a3e0dcc57f91f63803e02ceef2cc5e4038de9a19",
