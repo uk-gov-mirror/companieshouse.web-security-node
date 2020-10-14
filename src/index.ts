@@ -1,8 +1,8 @@
-import { createLogger } from 'ch-logging'
-import 'ch-node-session-handler'
-import { SessionKey } from 'ch-node-session-handler/lib/session/keys/SessionKey'
-import { SignInInfoKeys } from 'ch-node-session-handler/lib/session/keys/SignInInfoKeys'
-import { ISignInInfo, IUserProfile } from 'ch-node-session-handler/lib/session/model/SessionInterfaces'
+import '@companieshouse/node-session-handler'
+import { SessionKey } from '@companieshouse/node-session-handler/lib/session/keys/SessionKey'
+import { SignInInfoKeys } from '@companieshouse/node-session-handler/lib/session/keys/SignInInfoKeys'
+import { ISignInInfo, IUserProfile } from '@companieshouse/node-session-handler/lib/session/model/SessionInterfaces'
+import { createLogger } from '@companieshouse/structured-logging-node'
 import { NextFunction, Request, RequestHandler, Response } from 'express'
 
 const APP_NAME = 'web-security-node'

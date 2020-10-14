@@ -1,20 +1,25 @@
 {
-  "name": "web-security-node",
-  "version": "0.1.1",
+  "name": "@companieshouse/web-security-node",
+  "version": "0.0.0",
   "description": "Middleware for chs authentication",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "repository": "git@github.com:companieshouse/web-security-node.git",
   "license": "MIT",
   "scripts": {
     "test": "mocha 'test/**/*.test.ts'",
     "build": "rm -rf ./dist; tsc;",
     "lint": "tslint -p .",
-    "sonarqube": "sonar-scanner"
+    "sonarqube": "sonar-scanner",
+    "prepublishOnly": "[ ! -d node_modules ] && npm install; tsc",
+    "postpublish": "rm -rf lib"
   },
   "dependencies": {
-    "ch-logging": "git+ssh://git@github.com/companieshouse/ch-structured-logging-node.git#a3e0dcc57f91f63803e02ceef2cc5e4038de9a19",
-    "ch-node-session-handler": "git+ssh://git@github.com/companieshouse/node-session-handler.git#3.0.1"
+    "@companieshouse/structured-logging-node": "~1.0.3",
+    "@companieshouse/node-session-handler": "~4.1.4"
   },
   "devDependencies": {
     "@types/ioredis": "^4.16.2",
