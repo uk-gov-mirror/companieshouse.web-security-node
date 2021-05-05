@@ -21,6 +21,8 @@ export const authMiddleware = (options: AuthOptions): RequestHandler => (
   const appName = 'CH Web Security Node'
   const redirectURI = `${options.accountWebUrl}/signin?return_to=${options.returnUrl}`
 
+  logger.debug(`${JSON.stringify(options)} - Log options variables!`)
+  
   if (!req.session) {
     logger.debug(`${appName} - handler: Session object is missing!`)
     return res.redirect(redirectURI)
@@ -30,6 +32,8 @@ export const authMiddleware = (options: AuthOptions): RequestHandler => (
   const signedIn: boolean = signInInfo![SignInInfoKeys.SignedIn] === 1
   const userProfile: IUserProfile = signInInfo![SignInInfoKeys.UserProfile] || {}
   const userId: string | undefined = userProfile?.id
+
+  logger.debug(`${JSON.stringify(signInInfo)} - Log signInInfo variables!`)
 
   if (!signedIn) {
     logger.info(`${appName} - handler: userId=${userId}, Not signed in... Redirecting to: ${redirectURI}`)
