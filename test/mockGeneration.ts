@@ -1,5 +1,5 @@
-import { Session } from 'ch-node-session-handler'
-import { ISignInInfo } from 'ch-node-session-handler/lib/session/model/SessionInterfaces'
+import { Session } from '@companieshouse/node-session-handler'
+import { ISignInInfo } from '@companieshouse/node-session-handler/lib/session/model/SessionInterfaces'
 import { Request, Response } from 'express'
 import sinon from 'sinon'
 
