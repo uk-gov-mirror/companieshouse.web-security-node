@@ -48,11 +48,11 @@ const SCOPE_USER_WRITE_FULL = 'https://account.companieshouse.gov.uk/user.write-
 const SCOPE_COMPANY_WRITE_FULL_FORMAT = 'https://api.companieshouse.gov.uk/company/{COMPANY_NUMBER}/admin.write-full'
 
 export interface CompanyAuthConfig {
-  accountUrl: string,
+  authUri: string,
   companyNumber: string
   accountRequestKey: string,
   accountClientId: string,
-  chsUrl: string,
+  callbackUri: string,
   useFineGrainScopesModel: string
 }
 
@@ -100,10 +100,10 @@ async function getAuthRedirectUri(req: Request, authConfig: CompanyAuthConfig,
 
 async function createAuthUri(encodedNonce: string,
                              authConfig: CompanyAuthConfig, scope?: string): Promise<string> {
-  let authUri: string = `${authConfig.accountUrl}/oauth2/authorise`.concat(
+  let authUri: string = `${authConfig.authUri}`.concat(
     '?',
     `client_id=${authConfig.accountClientId}`,
-    `&redirect_uri=${authConfig.chsUrl}/oauth2/user/callback`,
+    `&redirect_uri=${authConfig.callbackUri}`,
     `&response_type=code`)
 
   if (scope) {
