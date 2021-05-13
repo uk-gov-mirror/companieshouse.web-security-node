@@ -1,6 +1,5 @@
 import { randomBytes } from 'crypto'
 import { JWE, JWK } from 'node-jose'
-import 'reflect-metadata'
 
 import { CompanyAuthConfig } from 'app/index'
 

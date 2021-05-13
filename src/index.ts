@@ -1,12 +1,11 @@
 import '@companieshouse/node-session-handler'
 import { SessionKey } from '@companieshouse/node-session-handler/lib/session/keys/SessionKey'
 import { SignInInfoKeys } from '@companieshouse/node-session-handler/lib/session/keys/SignInInfoKeys'
-import { UserProfileKeys } from '@companieshouse/node-session-handler/lib/session/keys/UserProfileKeys'
 import { ISignInInfo, IUserProfile } from '@companieshouse/node-session-handler/lib/session/model/SessionInterfaces'
 import { createLogger } from '@companieshouse/structured-logging-node'
 import { NextFunction, Request, RequestHandler, Response } from 'express'
 
-import JwtEncryptionService from 'app/encryption/jwtEncryptionService'
+import JwtEncryptionService from 'app/encryption/jwt.encryption.service'
 
 const APP_NAME = 'web-security-node'
 const logger = createLogger(APP_NAME)
@@ -69,7 +68,6 @@ export const companyAuthMiddleware = (config: CompanyAuthConfig): RequestHandler
   }
 
   const signInInfo: ISignInInfo = req.session.get<ISignInInfo>(SessionKey.SignInInfo) || {}
-  const userProfile: IUserProfile = signInInfo![SignInInfoKeys.UserProfile] || {}
 
   const companyNumber = config.companyNumber
   let scope
@@ -78,7 +76,7 @@ export const companyAuthMiddleware = (config: CompanyAuthConfig): RequestHandler
     scope = createScope(companyNumber, config)
   }
 
-  if (userProfile[UserProfileKeys.Scope] === scope) {
+  if (signInInfo[SignInInfoKeys.CompanyNumber] === companyNumber) {
     logger.debug(`${appName} - handler: User already authenticated for company`)
     return next()
   }
