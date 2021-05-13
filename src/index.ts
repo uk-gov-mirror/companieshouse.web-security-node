@@ -1,14 +1,15 @@
 import '@companieshouse/node-session-handler'
 import { SessionKey } from '@companieshouse/node-session-handler/lib/session/keys/SessionKey'
 import { SignInInfoKeys } from '@companieshouse/node-session-handler/lib/session/keys/SignInInfoKeys'
+import { UserProfileKeys } from '@companieshouse/node-session-handler/lib/session/keys/UserProfileKeys'
 import { ISignInInfo, IUserProfile } from '@companieshouse/node-session-handler/lib/session/model/SessionInterfaces'
 import { createLogger } from '@companieshouse/structured-logging-node'
 import { NextFunction, Request, RequestHandler, Response } from 'express'
 
-import JwtEncryptionService from 'app/encryption/jwtEncryptionService';
+import JwtEncryptionService from 'app/encryption/jwtEncryptionService'
 
-const APP_NAME = 'web-security-node';
-const logger = createLogger(APP_NAME);
+const APP_NAME = 'web-security-node'
+const logger = createLogger(APP_NAME)
 
 export interface AuthOptions {
   returnUrl: string
@@ -42,7 +43,9 @@ export const authMiddleware = (options: AuthOptions): RequestHandler => (
   next()
 }
 
-const OATH_SCOPE_PREFIX = 'https://api.companieshouse.gov.uk/company/'
+const LEGACY_COMPANY_SCOPE_PREFIX = 'https://api.companieshouse.gov.uk/company/'
+const SCOPE_USER_WRITE_FULL = 'https://account.companieshouse.gov.uk/user.write-full'
+const SCOPE_COMPANY_WRITE_FULL_FORMAT = 'https://api.companieshouse.gov.uk/company/{COMPANY_NUMBER}/admin.write-full'
 
 export interface CompanyAuthConfig {
   accountUrl: string,
@@ -50,6 +53,7 @@ export interface CompanyAuthConfig {
   accountRequestKey: string,
   accountClientId: string,
   chsUrl: string,
+  useFineGrainScopesModel: string
 }
 
 export const companyAuthMiddleware = (config: CompanyAuthConfig): RequestHandler => async (
@@ -57,19 +61,37 @@ export const companyAuthMiddleware = (config: CompanyAuthConfig): RequestHandler
     res: Response,
     next: NextFunction
 ) => {
-  const encryptionService = new JwtEncryptionService(config)
-  const companyNumber = config.companyNumber;
+  const appName = 'CH Web Security Node'
 
-  return res.redirect(await getAuthRedirectUri(req, config, encryptionService, companyNumber))
-  next()
+  if (!req.session) {
+    logger.debug(`${appName} - handler: Session object is missing!`)
+    throw new Error('Session object is missing for Company Auth Middleware')
+  }
+
+  const signInInfo: ISignInInfo = req.session.get<ISignInInfo>(SessionKey.SignInInfo) || {}
+  const userProfile: IUserProfile = signInInfo![SignInInfoKeys.UserProfile] || {}
+
+  const companyNumber = config.companyNumber
+  let scope
+
+  if (companyNumber) {
+    scope = createScope(companyNumber, config)
+  }
+
+  if (userProfile[UserProfileKeys.Scope] === scope) {
+    logger.debug(`${appName} - handler: User already authenticated for company`)
+    return next()
+  }
+  const encryptionService = new JwtEncryptionService(config)
+
+  return res.redirect(await getAuthRedirectUri(req, config, encryptionService, scope))
 }
 
 async function getAuthRedirectUri(req: Request, authConfig: CompanyAuthConfig,
                                   encryptionService: JwtEncryptionService,
-                                  companyNumber?: string): Promise<string> {
+                                  scope?: string): Promise<string> {
 
   const originalUrl: string = req.originalUrl
-  const scope: string = OATH_SCOPE_PREFIX + companyNumber
   const nonce: string = encryptionService.generateNonce()
   const encodedNonce: string = await encryptionService.jweEncodeWithNonce(originalUrl, nonce)
 
@@ -77,13 +99,40 @@ async function getAuthRedirectUri(req: Request, authConfig: CompanyAuthConfig,
 }
 
 async function createAuthUri(encodedNonce: string,
-                             authConfig: CompanyAuthConfig, scope: string): Promise<string> {
-  return `${authConfig.accountUrl}/oauth2/authorise`.concat(
-      '?',
-      `client_id=${authConfig.accountClientId}`,
-      `&redirect_uri=${authConfig.chsUrl}/oauth2/user/callback`,
-      `&response_type=code`,
-      `&scope=${scope}`,
-      `&state=${encodedNonce}`)
+                             authConfig: CompanyAuthConfig, scope?: string): Promise<string> {
+  let authUri: string = `${authConfig.accountUrl}/oauth2/authorise`.concat(
+    '?',
+    `client_id=${authConfig.accountClientId}`,
+    `&redirect_uri=${authConfig.chsUrl}/oauth2/user/callback`,
+    `&response_type=code`)
+
+  if (scope) {
+    authUri = authUri.concat(
+      `&scope=${scope}`
+    )
+  }
+
+  authUri = authUri.concat(
+    `&state=${encodedNonce}`
+  )
+
+  return authUri
+}
+
+function createScope(companyNumber: string, config: CompanyAuthConfig): string | undefined {
+  let scope
+
+  if (config.useFineGrainScopesModel === '1') {
+    // New fine grain scope model
+    scope = SCOPE_USER_WRITE_FULL
+    if (companyNumber) {
+      scope += ' ' + SCOPE_COMPANY_WRITE_FULL_FORMAT.replace('{COMPANY_NUMBER}', companyNumber)
+    }
+  } else if (companyNumber != null) {
+    // Legacy company scope
+    scope = LEGACY_COMPANY_SCOPE_PREFIX + companyNumber
+  }
+
+  return scope
 }
 
