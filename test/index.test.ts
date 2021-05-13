@@ -63,7 +63,6 @@ describe('Authentication Middleware', () => {
 })
 
 describe('Company Authentication Middleware', () => {
-  // const mockReturnUrl = 'AAAAAAA'
 
   let redirectStub: sinon.SinonStub
   let opts: CompanyAuthConfig
