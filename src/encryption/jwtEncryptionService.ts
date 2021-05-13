@@ -1,5 +1,4 @@
 import { randomBytes } from 'crypto'
-import { provide } from 'inversify-binding-decorators'
 import { JWE, JWK } from 'node-jose'
 import 'reflect-metadata'
 
@@ -11,7 +10,6 @@ interface AuthPayload {
     content: string
 }
 
-@provide(JwtEncryptionService)
 export default class JwtEncryptionService {
     public constructor(private companyAuthConfig: CompanyAuthConfig) {}
 
