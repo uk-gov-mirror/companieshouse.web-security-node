@@ -1,4 +1,5 @@
 import { Session } from '@companieshouse/node-session-handler'
+import {SignInInfoKeys} from '@companieshouse/node-session-handler/lib/session/keys/SignInInfoKeys'
 import { ISignInInfo } from '@companieshouse/node-session-handler/lib/session/model/SessionInterfaces'
 import { Request, Response } from 'express'
 import sinon from 'sinon'
@@ -17,6 +18,14 @@ export function generateSignInInfo(mockUserId: string, signedIn: number): ISignI
       id: mockUserId
     }
   }
+}
+
+export function generateSignInInfoForAuthenticatedCompany(mockUserId: string, companyNumber: string): ISignInInfo {
+  const signInInfo: ISignInInfo = generateSignInInfo(mockUserId, 1)
+
+  signInInfo[SignInInfoKeys.CompanyNumber] = companyNumber
+
+  return  signInInfo
 }
 
 export function generateRequest(requestSession?: Session): Request {
