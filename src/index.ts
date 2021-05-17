@@ -4,8 +4,7 @@ import { SignInInfoKeys } from '@companieshouse/node-session-handler/lib/session
 import { ISignInInfo, IUserProfile } from '@companieshouse/node-session-handler/lib/session/model/SessionInterfaces'
 import { createLogger } from '@companieshouse/structured-logging-node'
 import { NextFunction, Request, RequestHandler, Response } from 'express'
-
-import JwtEncryptionService from 'app/encryption/jwt.encryption.service'
+import JwtEncryptionService from './encryption/jwt.encryption.service'
 
 const APP_NAME = 'web-security-node'
 const logger = createLogger(APP_NAME)
