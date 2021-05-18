@@ -5,13 +5,11 @@ import { assert } from 'chai'
 import { Response } from 'express'
 import sinon from 'sinon'
 import { instance, mock, when } from 'ts-mockito'
-import {authMiddleware, companyAuthMiddleware, AuthOptions, CompanyAuthConfig} from '../src'
-import JwtEncryptionService from '../src/encryption/jwt.encryption.service'
+import {authMiddleware, AuthOptions} from '../src'
 import {
   generateRequest,
   generateResponse,
-  generateSignInInfo,
-  generateSignInInfoForAuthenticatedCompany
+  generateSignInInfo, generateSignInInfoAuthedForCompany
 } from './mockGeneration'
 
 describe('Authentication Middleware', () => {
@@ -28,6 +26,7 @@ describe('Authentication Middleware', () => {
     opts = {
       returnUrl: 'origin',
       accountWebUrl: 'accounts',
+      useFineGrainedScopes: true
     }
     mockResponse = generateResponse()
     mockResponse.redirect = redirectStub
@@ -62,71 +61,81 @@ describe('Authentication Middleware', () => {
   })
 })
 
-describe('Company Authentication Middleware', () => {
+describe('Authentication Middleware with company number', () => {
+  const mockReturnUrl = 'accounts/signin?return_to=origin&company_number=12345678'
+  const mockUserId = 'sA=='
 
   let redirectStub: sinon.SinonStub
-  let opts: CompanyAuthConfig
+  let opts: AuthOptions
   let mockResponse: Response
   let mockNext: sinon.SinonStub
-  let mockNonce: sinon.SinonStub
-  let mockJWT: sinon.SinonStub
 
   beforeEach(() => {
     redirectStub = sinon.stub()
     opts = {
-      authUri: "AUTH",
-      companyNumber: "12345678",
-      accountRequestKey: "KEY",
-      accountClientId: "CLIENT_ID",
-      callbackUri: "CALLBACK",
-      useFineGrainScopesModel: "0"
+      returnUrl: 'origin',
+      accountWebUrl: 'accounts',
+      useFineGrainedScopes: true,
+      companyNumber: '12345678'
     }
     mockResponse = generateResponse()
     mockResponse.redirect = redirectStub
     mockNext = sinon.stub()
-    mockNonce = sinon.stub(JwtEncryptionService.prototype, 'generateNonce').returns('3')
-    mockJWT = sinon.stub(JwtEncryptionService.prototype, 'jweEncodeWithNonce').returns(Promise.resolve('jwe'))
   })
 
-  afterEach(() => {
-    sinon.restore()
-  })
-
-  it('When the user is authed for company it should call next', () => {
+  it('When the user is not authed for company the middleware should not call next and should trigger redirect', () => {
     const authedSession = mock(Session)
     const mockRequest = generateRequest(instance(authedSession))
-    const mockUserId = 'sA=='
 
-    when(authedSession.get<ISignInInfo>(SessionKey.SignInInfo)).
-      thenReturn(generateSignInInfoForAuthenticatedCompany(mockUserId, "12345678"))
-    companyAuthMiddleware(opts)(mockRequest, mockResponse, mockNext)
+    when(authedSession.get<ISignInInfo>(SessionKey.SignInInfo)).thenReturn(generateSignInInfo(mockUserId, 1))
+    authMiddleware(opts)(mockRequest, mockResponse, mockNext)
+    assert(redirectStub.calledOnceWith(mockReturnUrl))
+    assert(mockNext.notCalled)
+  })
+
+  it('When the user is authenticated for company with fine grain scope and use fine grain true the middleware should call next', () => {
+    const authedSession = mock(Session)
+    const mockRequest = generateRequest(instance(authedSession))
+
+    when(authedSession.get<ISignInInfo>(SessionKey.SignInInfo))
+      .thenReturn(generateSignInInfoAuthedForCompany(mockUserId, 1, '12345678', false))
+    authMiddleware(opts)(mockRequest, mockResponse, mockNext)
     assert(mockNext.calledOnce)
-    assert(mockNonce.notCalled)
-    assert(mockJWT.notCalled)
+    assert(redirectStub.notCalled)
   })
 
-  it('When the user is authed for wrong company it should not call next', () => {
+  it('When the user is authenticated for company with legacy scope and use fine grain true the middleware should redirect', () => {
     const authedSession = mock(Session)
     const mockRequest = generateRequest(instance(authedSession))
-    const mockUserId = 'sA=='
 
-    when(authedSession.get<ISignInInfo>(SessionKey.SignInInfo)).
-    thenReturn(generateSignInInfoForAuthenticatedCompany(mockUserId, "87654321"))
-    companyAuthMiddleware(opts)(mockRequest, mockResponse, mockNext)
+    when(authedSession.get<ISignInInfo>(SessionKey.SignInInfo))
+      .thenReturn(generateSignInInfoAuthedForCompany(mockUserId, 1, '12345678', true))
+    authMiddleware(opts)(mockRequest, mockResponse, mockNext)
+    assert(redirectStub.calledOnceWith(mockReturnUrl))
     assert(mockNext.notCalled)
-    assert(mockNonce.calledOnce)
-    assert(mockJWT.calledOnce)
   })
 
-  it('When the user is not authed for any company it should not call next', () => {
-    const mockUserId = 'sA=='
-    const unAuthedSession = mock(Session)
-    const mockRequest = generateRequest(instance(unAuthedSession))
+  it('When the user is authenticated for company with legacy scope and use fine grain false the middleware should call next', () => {
+    const authedSession = mock(Session)
+    const mockRequest = generateRequest(instance(authedSession))
+    opts.useFineGrainedScopes = false
 
-    when(unAuthedSession.get<ISignInInfo>(SessionKey.SignInInfo)).thenReturn(generateSignInInfo(mockUserId, 0))
-    companyAuthMiddleware(opts)(mockRequest, mockResponse, mockNext)
+    when(authedSession.get<ISignInInfo>(SessionKey.SignInInfo))
+      .thenReturn(generateSignInInfoAuthedForCompany(mockUserId, 1, '12345678', true))
+    authMiddleware(opts)(mockRequest, mockResponse, mockNext)
+    assert(mockNext.calledOnce)
+    assert(redirectStub.notCalled)
+  })
+
+  it('When the user is authenticated for company with legacy scope and use fine grain true the middleware should redirect', () => {
+    const authedSession = mock(Session)
+    const mockRequest = generateRequest(instance(authedSession))
+    opts.useFineGrainedScopes = false
+
+    when(authedSession.get<ISignInInfo>(SessionKey.SignInInfo))
+      .thenReturn(generateSignInInfoAuthedForCompany(mockUserId, 1, '12345678', false))
+    authMiddleware(opts)(mockRequest, mockResponse, mockNext)
+    assert(redirectStub.calledOnceWith(mockReturnUrl))
     assert(mockNext.notCalled)
-    assert(mockNonce.calledOnce)
-    assert(mockJWT.calledOnce)
   })
 })
