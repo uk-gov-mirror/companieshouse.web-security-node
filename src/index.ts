@@ -21,7 +21,7 @@ export const authMiddleware = (options: AuthOptions): RequestHandler => (
 ) => {
   const appName = 'CH Web Security Node'
 
-  if (!options.chsWebUrl || options.chsWebUrl.length === 0) {
+  if (!options.chsWebUrl) {
     logger.error(`${appName} - handler: Required Field CHS Web URL not set`)
     throw new Error('Required Field CHS Web URL not set')
   }
@@ -53,7 +53,7 @@ export const authMiddleware = (options: AuthOptions): RequestHandler => (
   }
 
   logger.debug(`${appName} - handler: userId=${userId} authenticated successfully`)
-  next()
+  return next()
 }
 
 function isAuthorisedForCompany(companyNumber: string, signInInfo: ISignInInfo): boolean {
