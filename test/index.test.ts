@@ -26,7 +26,6 @@ describe('Authentication Middleware', () => {
     opts = {
       returnUrl: 'origin',
       accountWebUrl: 'accounts',
-      useFineGrainedScopes: true
     }
     mockResponse = generateResponse()
     mockResponse.redirect = redirectStub
@@ -75,7 +74,6 @@ describe('Authentication Middleware with company number', () => {
     opts = {
       returnUrl: 'origin',
       accountWebUrl: 'accounts',
-      useFineGrainedScopes: true,
       companyNumber: '12345678'
     }
     mockResponse = generateResponse()
@@ -93,49 +91,14 @@ describe('Authentication Middleware with company number', () => {
     assert(mockNext.notCalled)
   })
 
-  it('When the user is authenticated for company with fine grain scope and use fine grain true the middleware should call next', () => {
+  it('When the user is authenticated for company the middleware should call next', () => {
     const authedSession = mock(Session)
     const mockRequest = generateRequest(instance(authedSession))
 
     when(authedSession.get<ISignInInfo>(SessionKey.SignInInfo))
-      .thenReturn(generateSignInInfoAuthedForCompany(mockUserId, 1, '12345678', false))
+      .thenReturn(generateSignInInfoAuthedForCompany(mockUserId, 1, '12345678'))
     authMiddleware(opts)(mockRequest, mockResponse, mockNext)
     assert(mockNext.calledOnce)
     assert(redirectStub.notCalled)
-  })
-
-  it('When the user is authenticated for company with legacy scope and use fine grain true the middleware should redirect', () => {
-    const authedSession = mock(Session)
-    const mockRequest = generateRequest(instance(authedSession))
-
-    when(authedSession.get<ISignInInfo>(SessionKey.SignInInfo))
-      .thenReturn(generateSignInInfoAuthedForCompany(mockUserId, 1, '12345678', true))
-    authMiddleware(opts)(mockRequest, mockResponse, mockNext)
-    assert(redirectStub.calledOnceWith(mockReturnUrl))
-    assert(mockNext.notCalled)
-  })
-
-  it('When the user is authenticated for company with legacy scope and use fine grain false the middleware should call next', () => {
-    const authedSession = mock(Session)
-    const mockRequest = generateRequest(instance(authedSession))
-    opts.useFineGrainedScopes = false
-
-    when(authedSession.get<ISignInInfo>(SessionKey.SignInInfo))
-      .thenReturn(generateSignInInfoAuthedForCompany(mockUserId, 1, '12345678', true))
-    authMiddleware(opts)(mockRequest, mockResponse, mockNext)
-    assert(mockNext.calledOnce)
-    assert(redirectStub.notCalled)
-  })
-
-  it('When the user is authenticated for company with legacy scope and use fine grain true the middleware should redirect', () => {
-    const authedSession = mock(Session)
-    const mockRequest = generateRequest(instance(authedSession))
-    opts.useFineGrainedScopes = false
-
-    when(authedSession.get<ISignInInfo>(SessionKey.SignInInfo))
-      .thenReturn(generateSignInInfoAuthedForCompany(mockUserId, 1, '12345678', false))
-    authMiddleware(opts)(mockRequest, mockResponse, mockNext)
-    assert(redirectStub.calledOnceWith(mockReturnUrl))
-    assert(mockNext.notCalled)
   })
 })
