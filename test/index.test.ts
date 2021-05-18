@@ -1,7 +1,7 @@
 import { Session } from '@companieshouse/node-session-handler'
 import { SessionKey } from '@companieshouse/node-session-handler/lib/session/keys/SessionKey'
 import { ISignInInfo } from '@companieshouse/node-session-handler/lib/session/model/SessionInterfaces'
-import { assert } from 'chai'
+import { assert, expect } from 'chai'
 import { Response } from 'express'
 import sinon from 'sinon'
 import { instance, mock, when } from 'ts-mockito'
@@ -25,11 +25,20 @@ describe('Authentication Middleware', () => {
     redirectStub = sinon.stub()
     opts = {
       returnUrl: 'origin',
-      accountWebUrl: 'accounts',
+      chsWebUrl: 'accounts',
     }
     mockResponse = generateResponse()
     mockResponse.redirect = redirectStub
     mockNext = sinon.stub()
+  })
+
+  it('When CHS Web Url is blank, throw error', () => {
+    const mockRequest = generateRequest()
+    opts.chsWebUrl = ''
+
+    expect(() => authMiddleware(opts)(mockRequest, mockResponse, mockNext)).to.throw('Required Field CHS Web URL not set')
+    assert(redirectStub.notCalled)
+    assert(mockNext.notCalled)
   })
 
   it('When there is no session the middleware should not call next and should trigger redirect', () => {
@@ -73,7 +82,7 @@ describe('Authentication Middleware with company number', () => {
     redirectStub = sinon.stub()
     opts = {
       returnUrl: 'origin',
-      accountWebUrl: 'accounts',
+      chsWebUrl: 'accounts',
       companyNumber: '12345678'
     }
     mockResponse = generateResponse()

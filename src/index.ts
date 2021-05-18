@@ -10,7 +10,7 @@ const logger = createLogger(APP_NAME)
 
 export interface AuthOptions {
   returnUrl: string
-  accountWebUrl: string
+  chsWebUrl: string
   companyNumber?: string
 }
 
@@ -20,7 +20,13 @@ export const authMiddleware = (options: AuthOptions): RequestHandler => (
   next: NextFunction
 ) => {
   const appName = 'CH Web Security Node'
-  let redirectURI = `${options.accountWebUrl}/signin?return_to=${options.returnUrl}`
+
+  if (!options.chsWebUrl || options.chsWebUrl.length === 0) {
+    logger.error(`${appName} - handler: Required Field CHS Web URL not set`)
+    throw new Error('Required Field CHS Web URL not set')
+  }
+
+  let redirectURI = `${options.chsWebUrl}/signin?return_to=${options.returnUrl}`
 
   if(options.companyNumber) {
     redirectURI = redirectURI.concat(`&company_number=${options.companyNumber}`)
