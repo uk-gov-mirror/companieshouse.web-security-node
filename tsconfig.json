@@ -16,6 +16,7 @@
     "target": "es6",
     "emitDecoratorMetadata": true,
     "moduleResolution": "node",
+    "skipLibCheck": true,
     "plugins": [
       {
         "name": "typescript-tslint-plugin"
