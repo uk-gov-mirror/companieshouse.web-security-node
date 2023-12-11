@@ -18,7 +18,7 @@
     "postpublish": "rm -rf lib"
   },
   "dependencies": {
-    "@companieshouse/node-session-handler": "~4.1.4",
+    "@companieshouse/node-session-handler": "~5.0.1",
     "@companieshouse/structured-logging-node": "~1.0.3"
   },
   "devDependencies": {
