@@ -5,7 +5,7 @@ import { assert, expect } from 'chai'
 import { Response } from 'express'
 import sinon from 'sinon'
 import { instance, mock, when } from 'ts-mockito'
-import {authMiddleware, AuthOptions, csrfRequestMiddleware, CsrfOptions} from '../src'
+import {authMiddleware, AuthOptions, csrfRequestMiddleware, CsrfOptions, CsrfTokensMismatchError} from '../src'
 import {
   generateRequest,
   generateResponse,
@@ -161,7 +161,7 @@ describe("CSRF Middleware enabled", () => {
 
     csrfRequestMiddleware(opts)(mockRequest, mockResponse, mockNext);
 
-    assert(mockNext.calledWithMatch(sinon.match((error) => error instanceof Error && error.message === "Invalid CSRF token.")));
+    assert(mockNext.calledWithMatch(sinon.match((error) => error instanceof CsrfTokensMismatchError && error.message === "Invalid CSRF token.")));
   });
 
   it("calls next with error when csrf token in body does not match", () => {
@@ -173,7 +173,7 @@ describe("CSRF Middleware enabled", () => {
 
     csrfRequestMiddleware(opts)(mockRequest, mockResponse, mockNext);
 
-    assert(mockNext.calledWithMatch(sinon.match((error) => error instanceof Error && error.message === "Invalid CSRF token.")));
+    assert(mockNext.calledWithMatch(sinon.match((error) => error instanceof CsrfTokensMismatchError && error.message === "Invalid CSRF token.")));
   });
 
   it("calls next with no args when not post", () => {

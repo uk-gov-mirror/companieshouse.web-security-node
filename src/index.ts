@@ -12,6 +12,8 @@ const MUTABLE_METHODS = ['POST', 'DELETE', 'PUT', 'PATCH']
 export const DEFAULT_CSRF_TOKEN_HEADER = 'X-CSRF-TOKEN'
 export const DEFAULT_CSRF_TOKEN_PARAMETER_NAME = '_csrf'
 
+export class CsrfTokensMismatchError extends Error {}
+
 export interface AuthOptions {
   returnUrl: string
   chsWebUrl: string
@@ -91,11 +93,10 @@ export const csrfRequestMiddleware = (options: CsrfOptions): RequestHandler => (
       }
 
       const sessionCsrfToken = req.session.get<string>(SessionKey.CsrfToken)
-      console.log(sessionCsrfToken)
 
       if (csrfTokenInRequest !== sessionCsrfToken) {
         logger.error('Possible csrf attack mitigated')
-        throw new Error('Invalid CSRF token.')
+        throw new CsrfTokensMismatchError('Invalid CSRF token.')
       }
     }
 
