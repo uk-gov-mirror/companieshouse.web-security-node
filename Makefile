@@ -12,6 +12,8 @@ clean:
 build:
 	npm i
 	npm run build
+	mkdir -p ./dist/web-security-node/
+	cp ./src/views/*.njk ./dist/web-security-node/
 
 .PHONY: security-check
 security-check:
