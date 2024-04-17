@@ -1,5 +1,5 @@
 {%- macro csrfInput(params) -%}
   <input type="hidden"
-    {%- if params.field_name -%} name="{{params.field_name}}" {%- else -%} name="_csrf" {%- endif -%}
-    value="{{params.csrf_token}}" />
+    {%- if params.fieldName -%} name="{{params.fieldName}}" {%- else -%} name="_csrf" {%- endif -%}
+    value="{{params.csrfToken}}" />
 {%- endmacro -%}
