@@ -8,8 +8,9 @@ import {NextFunction, Request, RequestHandler, Response} from 'express'
 const APP_NAME = 'web-security-node'
 const logger = createLogger(APP_NAME)
 const MUTABLE_METHODS = ['POST', 'DELETE', 'PUT', 'PATCH']
+
 export const DEFAULT_CSRF_TOKEN_HEADER = 'X-CSRF-TOKEN'
-const DEFAULT_CSRF_TOKEN_PARAMETER_NAME = '_csrf'
+export const DEFAULT_CSRF_TOKEN_PARAMETER_NAME = '_csrf'
 
 export interface AuthOptions {
   returnUrl: string
