@@ -7,11 +7,16 @@ import {NextFunction, Request, RequestHandler, Response} from 'express'
 
 const APP_NAME = 'web-security-node'
 const logger = createLogger(APP_NAME)
+const MUTABLE_METHODS = ["POST", "DELETE", "PUT", "PATCH"]
 
 export interface AuthOptions {
   returnUrl: string
   chsWebUrl: string
   companyNumber?: string
+}
+
+export interface CsrfOptions {
+  enabled: boolean
 }
 
 export const authMiddleware = (options: AuthOptions): RequestHandler => (
@@ -55,6 +60,43 @@ export const authMiddleware = (options: AuthOptions): RequestHandler => (
   logger.debug(`${appName} - handler: userId=${userId} authenticated successfully`)
   return next()
 }
+
+export const csrfRequestMiddleware = (options: CsrfOptions): RequestHandler => (
+  req: Request,
+  _: Response,
+  next: NextFunction
+) => {
+  const appName = 'CH Web Security Node'
+
+  if (!options.enabled) {
+    console.debug("CSRF protections disabled");
+    return next()
+  }
+
+  try {
+    if (MUTABLE_METHODS.includes(req.method)) {
+      const csrfTokenInRequest = req.body["_csrf"] || req.headers["X-CSRF-TOKEN"];
+
+      if (!req.session) {
+        logger.debug(`${appName} - handler: Session object is missing!`)
+        throw new Error("Session not set.")
+      }
+
+      const sessionCsrfToken = req.session.get<string>(SessionKey.CsrfToken);
+      console.log(sessionCsrfToken)
+
+      if (csrfTokenInRequest !== sessionCsrfToken) {
+        logger.error("Possible csrf attack mitigated");
+        throw "Invalid CSRF token.";
+      }
+    }
+
+    return next()
+  } catch (err) {
+    logger.errorRequest(req, `Could not handle CSRF validation: ${err}`);
+    return next(err);
+  }
+};
 
 function isAuthorisedForCompany(companyNumber: string, signInInfo: ISignInInfo): boolean {
   const authorisedCompany = signInInfo[SignInInfoKeys.CompanyNumber]

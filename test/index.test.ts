@@ -5,7 +5,7 @@ import { assert, expect } from 'chai'
 import { Response } from 'express'
 import sinon from 'sinon'
 import { instance, mock, when } from 'ts-mockito'
-import {authMiddleware, AuthOptions} from '../src'
+import {authMiddleware, AuthOptions, csrfRequestMiddleware, CsrfOptions} from '../src'
 import {
   generateRequest,
   generateResponse,
@@ -109,5 +109,121 @@ describe('Authentication Middleware with company number', () => {
     authMiddleware(opts)(mockRequest, mockResponse, mockNext)
     assert(mockNext.calledOnce)
     assert(redirectStub.notCalled)
+  })
+})
+
+describe("CSRF Middleware enabled", () => {
+  let redirectStub: sinon.SinonStub
+  let opts: CsrfOptions
+  let mockResponse: Response
+  let mockNext: sinon.SinonStub
+
+  beforeEach(() => {
+    redirectStub = sinon.stub()
+    opts = {
+      enabled: true
+    }
+    mockResponse = generateResponse()
+    mockResponse.redirect = redirectStub
+    mockNext = sinon.stub()
+  });
+
+  it("calls next with no args when csrf token in request headers matches csrf token in session", () => {
+    const csrfToken = "0fb9a779-2262-410f-a075-7f1359f142b6";
+    const sessionMock = mock(Session);
+    const mockRequest = generateRequest(instance(sessionMock), csrfToken, undefined, "POST");
+
+    when(sessionMock.get<string>(SessionKey.CsrfToken)).thenReturn(csrfToken);
+
+    csrfRequestMiddleware(opts)(mockRequest, mockResponse, mockNext);
+
+    assert(mockNext.calledOnceWithExactly())
+  });
+
+  it("calls next with no args when csrf token in request body matches csrf token in session", () => {
+    const csrfToken = "0fb9a779-2262-410f-a075-7f1359f142b6";
+    const sessionMock = mock(Session);
+    const mockRequest = generateRequest(instance(sessionMock), undefined, csrfToken, "POST");
+
+    when(sessionMock.get<string>(SessionKey.CsrfToken)).thenReturn(csrfToken);
+
+    csrfRequestMiddleware(opts)(mockRequest, mockResponse, mockNext);
+
+    assert(mockNext.calledOnceWithExactly())
+  });
+
+  it("calls next with error when csrf token in header does not match", () => {
+    const csrfToken = "0fb9a779-2262-410f-a075-7f1359f142b6";
+    const sessionMock = mock(Session);
+    const mockRequest = generateRequest(instance(sessionMock), "58ff006d-8c3c-4590-aa3c-c7c594fb422e", undefined, "POST");
+
+    when(sessionMock.get<string>(SessionKey.CsrfToken)).thenReturn(csrfToken);
+
+    csrfRequestMiddleware(opts)(mockRequest, mockResponse, mockNext);
+
+    assert(mockNext.calledOnceWith("Invalid CSRF token."));
+  });
+
+  it("calls next with error when csrf token in body does not match", () => {
+    const csrfToken = "0fb9a779-2262-410f-a075-7f1359f142b6";
+    const sessionMock = mock(Session);
+    const mockRequest = generateRequest(instance(sessionMock), undefined, "58ff006d-8c3c-4590-aa3c-c7c594fb422e", "POST");
+
+    when(sessionMock.get<string>(SessionKey.CsrfToken)).thenReturn(csrfToken);
+
+    csrfRequestMiddleware(opts)(mockRequest, mockResponse, mockNext);
+
+    assert(mockNext.calledOnceWith("Invalid CSRF token."));
+  });
+
+  it("calls next with no args when not post", () => {
+    const sessionMock = mock(Session);
+    const mockRequest = generateRequest(instance(sessionMock));
+
+    csrfRequestMiddleware(opts)(mockRequest, mockResponse, mockNext);
+
+    assert(mockNext.calledOnceWith());
+  });
+
+  it("prioritises body over header", () => {
+    const csrfToken = "0fb9a779-2262-410f-a075-7f1359f142b6";
+    const sessionMock = mock(Session);
+    const mockRequest = generateRequest(instance(sessionMock), "e1f1ba25-e129-490c-9675-47805b878dcd", csrfToken, "POST");
+
+    when(sessionMock.get<string>(SessionKey.CsrfToken)).thenReturn(csrfToken);
+
+    csrfRequestMiddleware(opts)(mockRequest, mockResponse, mockNext);
+
+    assert(mockNext.calledOnceWithExactly())
+  });
+});
+
+describe("CSRF Middleware disabled", () => {
+  let redirectStub: sinon.SinonStub
+  let opts: CsrfOptions
+  let mockResponse: Response
+  let mockNext: sinon.SinonStub
+
+  beforeEach(() => {
+    redirectStub = sinon.stub()
+    opts = {
+      enabled: false
+    }
+    mockResponse = generateResponse()
+    mockResponse.redirect = redirectStub
+    mockNext = sinon.stub()
+  });
+
+  it("Calls next", () => {
+    const csrfToken = "0fb9a779-2262-410f-a075-7f1359f142b6";
+    const sessionMock = mock(Session);
+    const mockRequest = generateRequest(instance(sessionMock), undefined, undefined, "POST");
+
+    when(sessionMock.get<string>(SessionKey.CsrfToken)).thenReturn(csrfToken);
+
+    csrfRequestMiddleware(opts)(mockRequest, mockResponse, mockNext);
+
+    assert(mockNext.calledOnceWithExactly())
+
   })
 })

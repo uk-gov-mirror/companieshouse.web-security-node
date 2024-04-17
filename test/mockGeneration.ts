@@ -27,11 +27,28 @@ export function generateSignInInfoAuthedForCompany(mockUserId: string,
   return signInInfo
 }
 
-export function generateRequest(requestSession?: Session): Request {
+export function generateRequest(requestSession?: Session, csrfTokenInHeader?: string, csrfTokenInBody?: string, method: 'GET' | 'POST' | "DELETE" = "GET"): Request {
+  const headers = {
+    ...(
+      csrfTokenInHeader
+      ? {
+        "X-CSRF-TOKEN": csrfTokenInHeader
+      }
+      : {}
+    ),
+    host: "localhost"
+  }
+
+  const body = csrfTokenInBody
+    ? {
+      "_csrf": csrfTokenInBody
+    }
+    : {}
+
   const request: Request = {
-    headers: {
-      host: 'localhost'
-   }
+    headers,
+    method,
+    body
   } as Request
 
   if (requestSession) {
