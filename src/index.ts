@@ -8,6 +8,8 @@ import {NextFunction, Request, RequestHandler, Response} from 'express'
 const APP_NAME = 'web-security-node'
 const logger = createLogger(APP_NAME)
 const MUTABLE_METHODS = ["POST", "DELETE", "PUT", "PATCH"]
+export const DEFAULT_CSRF_TOKEN_HEADER = "X-CSRF-TOKEN";
+const DEFAULT_CSRF_TOKEN_PARAMETER_NAME = "_csrf"
 
 export interface AuthOptions {
   returnUrl: string
@@ -17,6 +19,8 @@ export interface AuthOptions {
 
 export interface CsrfOptions {
   enabled: boolean
+  headerName?: string
+  parameterName?: string
 }
 
 export const authMiddleware = (options: AuthOptions): RequestHandler => (
@@ -73,9 +77,12 @@ export const csrfRequestMiddleware = (options: CsrfOptions): RequestHandler => (
     return next()
   }
 
+  const headerName = options.headerName || DEFAULT_CSRF_TOKEN_HEADER;
+  const parameterName = options.parameterName || DEFAULT_CSRF_TOKEN_PARAMETER_NAME;
+
   try {
     if (MUTABLE_METHODS.includes(req.method)) {
-      const csrfTokenInRequest = req.body["_csrf"] || req.headers["X-CSRF-TOKEN"];
+      const csrfTokenInRequest = req.body[parameterName] || req.headers[headerName];
 
       if (!req.session) {
         logger.debug(`${appName} - handler: Session object is missing!`)

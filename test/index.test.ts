@@ -196,6 +196,52 @@ describe("CSRF Middleware enabled", () => {
 
     assert(mockNext.calledOnceWithExactly())
   });
+
+  describe("custom header", () => {
+    it("can locate csrf token in custom header", () => {
+      const csrfToken = "0fb9a779-2262-410f-a075-7f1359f142b6";
+      const customHeaderName = "custom-csrf-token-header"
+
+      const sessionMock = mock(Session);
+      const mockRequest = generateRequest(instance(sessionMock), "blah", undefined);
+      
+      mockRequest.headers[customHeaderName] = csrfToken;
+      mockRequest.method = "POST";
+  
+      when(sessionMock.get<string>(SessionKey.CsrfToken)).thenReturn(csrfToken);
+  
+      csrfRequestMiddleware({
+        enabled: true,
+        headerName: customHeaderName
+      })(mockRequest, mockResponse, mockNext);
+  
+      assert(mockNext.calledOnceWithExactly())
+    })
+  })
+
+  describe("custom field", () => {
+    it("can locate csrf token in field in body", () => {
+      const csrfToken = "0fb9a779-2262-410f-a075-7f1359f142b6";
+      const customParameterName = "custom-csrf-token-parameter"
+
+      const sessionMock = mock(Session);
+      const mockRequest = generateRequest(instance(sessionMock),undefined, "undefined");
+      
+      mockRequest.method = "POST";
+      mockRequest.body = {
+        [customParameterName]: csrfToken
+      }
+  
+      when(sessionMock.get<string>(SessionKey.CsrfToken)).thenReturn(csrfToken);
+  
+      csrfRequestMiddleware({
+        enabled: true,
+        parameterName: customParameterName
+      })(mockRequest, mockResponse, mockNext);
+  
+      assert(mockNext.calledOnceWithExactly())
+    })
+  })
 });
 
 describe("CSRF Middleware disabled", () => {
@@ -224,6 +270,5 @@ describe("CSRF Middleware disabled", () => {
     csrfRequestMiddleware(opts)(mockRequest, mockResponse, mockNext);
 
     assert(mockNext.calledOnceWithExactly())
-
   })
 })
