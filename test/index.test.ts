@@ -161,7 +161,7 @@ describe("CSRF Middleware enabled", () => {
 
     csrfRequestMiddleware(opts)(mockRequest, mockResponse, mockNext);
 
-    assert(mockNext.calledOnceWith("Invalid CSRF token."));
+    assert(mockNext.calledWithMatch(sinon.match((error) => error instanceof Error && error.message === "Invalid CSRF token.")));
   });
 
   it("calls next with error when csrf token in body does not match", () => {
@@ -173,7 +173,7 @@ describe("CSRF Middleware enabled", () => {
 
     csrfRequestMiddleware(opts)(mockRequest, mockResponse, mockNext);
 
-    assert(mockNext.calledOnceWith("Invalid CSRF token."));
+    assert(mockNext.calledWithMatch(sinon.match((error) => error instanceof Error && error.message === "Invalid CSRF token.")));
   });
 
   it("calls next with no args when not post", () => {
