@@ -121,6 +121,7 @@ matches a token stored within the CHS session.
 #### `defaultCsrfTokenFactory` function
 
 This function is the default CSRF issuing function, it essentially provides an
+uuid.
 
 #### Exceptions
 
