@@ -18,7 +18,8 @@ will expect all requests from methods which modify data (for example
     npm i @companieshouse/web-security-node@^3.0.0
     ```
 
-2. Define your options for your application
+2. Define the options for the middleware and add the middleware to the
+  application
 
     ```typescript
     import { CsrfProtectionMiddleware } from " @companieshouse/web-security-node"
