@@ -13,24 +13,78 @@ const logger = createLogger(APP_NAME)
 const DEFAULT_CSRF_TOKEN_HEADER = "X-CSRF-TOKEN"
 const DEFAULT_CSRF_TOKEN_PARAMETER_NAME = "_csrf"
 const MUTABLE_METHODS = ['POST', 'DELETE', 'PUT', 'PATCH']
-const defaultChsSessionCookieName = "_SID";
+const DEFAULT_CHS_SESSION_COOKIE_NAME = "_SID";
 
+/**
+ * The token factory which is used by default when not supplied in the
+ * middleware configuration. Essentially generates a UUID.
+ * @returns CSRF Token - i.e. a uuid
+ */
 export const defaultCsrfTokenFactory = () => uuidv4()
 
+/**
+ * Provides the options to the filtering middleware.
+ */
 export interface CsrfOptions {
+    /**
+     * Whether or not the filter should filter requests.
+     */
     enabled: boolean
+
+    /**
+     * SessionStore for updating the CHS session
+     */
     sessionStore: SessionStore
+
+    /**
+     * Name of the cookie storing the signed CHS session ID
+     */
     sessionCookieName?: string,
+
+    /**
+     * Supplies a new CRSF token value
+     * @returns a new unique CRSF token value
+     */
     csrfTokenFactory?: () => string,
+
+    /**
+     * When true the filter will generate a new CRSF token upon a immutable
+     * request and store within the session. False may cause an application
+     * to fail when it is absent.
+     */
     createWhenCsrfTokenAbsent?: boolean
+    
+    /**
+     * Name of the request header to look for the CSRF token
+     */
     headerName?: string
+
+    /**
+     * Name of the field in the request body for the CSRF token
+     */
     parameterName?: string
 }
 
+/**
+ * An Error thrown when CSRF token does not match the expected token held
+ * within session
+ */
 export class CsrfTokensMismatchError extends Error { }
 
+/**
+ * An error thrown when CSRF token is not held within the Session when
+ * validating a request.
+ */
 export class MissingCsrfSessionToken extends Error { }
 
+/**
+ * Express middleware which will filter out requests believed to be as a result
+ * of Cross Site Request Forgery attacks. These are identified by requests
+ * to mutable endpoints which do not contain the expected CSRF token. This
+ * is implementing the Synchronisation Token Pattern approach.
+ * 
+ * Depending on the the properties provided will modify the behaviour
+ */
 export const CsrfProtectionMiddleware = (csrfOptions: CsrfOptions): RequestHandler => {
     return expressAsyncHandler(csrfFilter(csrfOptions));
 }
@@ -39,29 +93,38 @@ const csrfFilter = (options: CsrfOptions): RequestHandler => {
     return async (req: Request, res: Response, next: NextFunction): Promise<any> => {
         const appName = 'CH Web Security Node'
 
+        // When disabled just continue chain
         if (!options.enabled) {
             console.debug('CSRF protections disabled')
             return next()
         }
 
-        const headerName = options.headerName || DEFAULT_CSRF_TOKEN_HEADER
-        const parameterName = options.parameterName || DEFAULT_CSRF_TOKEN_PARAMETER_NAME
-        const csrfTokenFactory = options.csrfTokenFactory || defaultCsrfTokenFactory
-        const cookieName = options.sessionCookieName || defaultChsSessionCookieName;
-
         try {
+            // This filter requires the session to be set on the request - fail
+            // the request if there is no session set, probably the result of
+            // application misconfiguration
             if (!req.session) {
                 logger.debug(`${appName} - handler: Session object is missing!`)
                 throw new Error('Session not set.')
             }
 
+            const headerName = options.headerName || DEFAULT_CSRF_TOKEN_HEADER
+            const parameterName = options.parameterName || DEFAULT_CSRF_TOKEN_PARAMETER_NAME
+            const csrfTokenFactory = options.csrfTokenFactory || defaultCsrfTokenFactory
+            const cookieName = options.sessionCookieName || DEFAULT_CHS_SESSION_COOKIE_NAME;
+
             const sessionCsrfToken = req.session.get<string>(SessionKey.CsrfToken)
 
             if (MUTABLE_METHODS.includes(req.method)) {
+                // When the request is for a method which likely mutates the
+                // state of the application check that the CRSF token is able
+                // to perform the check and check the tokens match
                 if (!sessionCsrfToken) {
                     throw new MissingCsrfSessionToken("Session does not include CSRF token.")
                 }
 
+                // Token most likely to be in the request body so prioritise over headers
+                // it is also the hardest for an attacker to modify
                 const csrfTokenInRequest = req.body[parameterName] || req.headers[headerName]
 
                 if (csrfTokenInRequest !== sessionCsrfToken) {
@@ -69,9 +132,13 @@ const csrfFilter = (options: CsrfOptions): RequestHandler => {
                     throw new CsrfTokensMismatchError('Invalid CSRF token.')
                 }
 
+                // Modify the render function to drop the csrfToken into the form variables when called
                 res.render = modifiedRender(res, sessionCsrfToken);
             } else if (
                 !sessionCsrfToken && options.createWhenCsrfTokenAbsent !== false) {
+
+                // When there is no CSRF token in the CHS session and the options
+                // generate a new token and store in the session
                 const csrfToken = csrfTokenFactory();
                 const newSessionData = {
                     ...(req.session.data),
@@ -85,6 +152,7 @@ const csrfFilter = (options: CsrfOptions): RequestHandler => {
                     newSessionData
                 )
 
+                // Modify the render function to drop the csrfToken into the form variables when called
                 res.render = modifiedRender(res, csrfToken);
             }
 
