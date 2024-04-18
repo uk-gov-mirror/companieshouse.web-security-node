@@ -117,7 +117,7 @@ const csrfFilter = (options: CsrfOptions): RequestHandler => {
 
             if (MUTABLE_METHODS.includes(req.method)) {
                 // When the request is for a method which likely mutates the
-                // state of the application check that the CSRF token is able
+                // state of the application check that it is possible
                 // to perform the check and check the tokens match
                 if (!sessionCsrfToken) {
                     throw new MissingCsrfSessionToken("Session does not include CSRF token.")
