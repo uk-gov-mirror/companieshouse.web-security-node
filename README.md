@@ -59,7 +59,19 @@ token. This implements a
 
     ```
 
-3. In each form which submits data (or modifies data) add the following macro call
+3. Amend the Nunjucks configuration to add the thirdparty templates from this library:
+
+    ```typescript
+    nunjucks
+      .configure([
+          "dist/views",
+          "node_modules/govuk-frontend/",
+          "node_modules/govuk-frontend/components/",
+          "node_modules/@companies-house/web-security-node/"
+      ], nunjucksConfig)
+    ```
+
+4. In each form which submits data (or modifies data) add the following macro call
 
     ```nunjucks
     {% from "web-security-node/components/csrf-token-input/macro.njk" import csrfTokenInput %}
