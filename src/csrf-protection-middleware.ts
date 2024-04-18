@@ -42,13 +42,13 @@ export interface CsrfOptions {
     sessionCookieName?: string,
 
     /**
-     * Supplies a new CRSF token value
-     * @returns a new unique CRSF token value
+     * Supplies a new CSRF token value
+     * @returns a new unique CSRF token value
      */
     csrfTokenFactory?: () => string,
 
     /**
-     * When true the filter will generate a new CRSF token upon a immutable
+     * When true the filter will generate a new CSRF token upon a immutable
      * request and store within the session. False may cause an application
      * to fail when it is absent.
      */
@@ -117,7 +117,7 @@ const csrfFilter = (options: CsrfOptions): RequestHandler => {
 
             if (MUTABLE_METHODS.includes(req.method)) {
                 // When the request is for a method which likely mutates the
-                // state of the application check that the CRSF token is able
+                // state of the application check that the CSRF token is able
                 // to perform the check and check the tokens match
                 if (!sessionCsrfToken) {
                     throw new MissingCsrfSessionToken("Session does not include CSRF token.")
