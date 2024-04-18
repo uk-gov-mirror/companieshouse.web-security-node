@@ -65,65 +65,6 @@ export const authMiddleware = (options: AuthOptions): RequestHandler => (
   return next()
 }
 
-// export const csrfRequestMiddleware = (options: CsrfOptions): RequestHandler => (
-//   req: Request,
-//   _: Response,
-//   next: NextFunction
-// ) => {
-//   const appName = 'CH Web Security Node'
-
-//   if (!options.enabled) {
-//     console.debug('CSRF protections disabled')
-//     return next()
-//   }
-
-//   const headerName = options.headerName || DEFAULT_CSRF_TOKEN_HEADER
-//   const parameterName = options.parameterName || DEFAULT_CSRF_TOKEN_PARAMETER_NAME
-//   const csrfTokenFactory = options.csrfTokenFactory ||defaultCsrfTokenFactory
-//   const cookieName = options.sessionCookieName || defaultChsSessionCookieName;
-
-//   try {
-//     if (MUTABLE_METHODS.includes(req.method)) {
-//       const csrfTokenInRequest = req.body[parameterName] || req.headers[headerName]
-
-//       if (!req.session) {
-//         logger.debug(`${appName} - handler: Session object is missing!`)
-//         throw new Error('Session not set.')
-//       }
-
-//       const sessionCsrfToken = req.session.get<string>(SessionKey.CsrfToken)
-//       logger.info(`csrf token=${sessionCsrfToken}`)
-
-//       if (!sessionCsrfToken) {
-//         const newSessionData = {
-//           ...(req.session.data),
-//           [SessionKey.CsrfToken]: csrfTokenFactory()
-//         }
-
-//         req.session = {data: newSessionData} as Session;
-
-//         console.log("it lies")
-//         options.sessionStore.store(
-//           Cookie.createFrom(req.cookies[cookieName]),
-//           newSessionData
-//         ).then(_ => {
-//           next()
-//         })
-//       }
-
-//       if (csrfTokenInRequest !== sessionCsrfToken) {
-//         logger.error('Possible csrf attack mitigated')
-//         throw new CsrfTokensMismatchError('Invalid CSRF token.')
-//       }
-//     }
-
-//     return next()
-//   } catch (err) {
-//     logger.errorRequest(req, `Could not handle CSRF validation: ${err}`)
-//     return next(err)
-//   }
-// }
-
 function isAuthorisedForCompany(companyNumber: string, signInInfo: ISignInInfo): boolean {
   const authorisedCompany = signInInfo[SignInInfoKeys.CompanyNumber]
   if (!authorisedCompany) {
