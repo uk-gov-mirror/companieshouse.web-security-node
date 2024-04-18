@@ -1,16 +1,17 @@
-import { Session } from '@companieshouse/node-session-handler'
+import { Session, SessionStore } from '@companieshouse/node-session-handler'
 import { SessionKey } from '@companieshouse/node-session-handler/lib/session/keys/SessionKey'
 import { ISignInInfo } from '@companieshouse/node-session-handler/lib/session/model/SessionInterfaces'
 import { assert, expect } from 'chai'
 import { Response } from 'express'
 import sinon from 'sinon'
 import { instance, mock, when } from 'ts-mockito'
-import {authMiddleware, AuthOptions, csrfRequestMiddleware, CsrfOptions, CsrfTokensMismatchError} from '../src'
+import { authMiddleware, AuthOptions, CsrfProtectionMiddleware, CsrfOptions, CsrfTokensMismatchError, MissingCsrfSessionToken } from '../src'
 import {
   generateRequest,
   generateResponse,
   generateSignInInfo, generateSignInInfoAuthedForCompany
 } from './mockGeneration'
+import { Cookie } from '@companieshouse/node-session-handler/lib/session/model/Cookie'
 
 describe('Authentication Middleware', () => {
   const mockReturnUrl = 'accounts/signin?return_to=origin'
@@ -117,16 +118,28 @@ describe("CSRF Middleware enabled", () => {
   let opts: CsrfOptions
   let mockResponse: Response
   let mockNext: sinon.SinonStub
+  let sessionStore: SessionStore
+  let cookie: Cookie
+  const newCsrfToken = "497a33e7-47be-4508-bf9d-0dd087fcf53b"
 
   beforeEach(() => {
     redirectStub = sinon.stub()
+    sessionStore = mock(SessionStore)
     opts = {
-      enabled: true
+      enabled: true,
+      // @ts-ignore
+      sessionStore: sinon.mock(sessionStore),
+      csrfTokenFactory: () => newCsrfToken
     }
     mockResponse = generateResponse()
     mockResponse.redirect = redirectStub
     mockNext = sinon.stub()
+    cookie = Cookie.createNew("c-is-for-cookie-which-is-good-enough-for-me");
   });
+
+  afterEach(() => {
+    sinon.restore()
+  })
 
   it("calls next with no args when csrf token in request headers matches csrf token in session", () => {
     const csrfToken = "0fb9a779-2262-410f-a075-7f1359f142b6";
@@ -135,7 +148,7 @@ describe("CSRF Middleware enabled", () => {
 
     when(sessionMock.get<string>(SessionKey.CsrfToken)).thenReturn(csrfToken);
 
-    csrfRequestMiddleware(opts)(mockRequest, mockResponse, mockNext);
+    CsrfProtectionMiddleware(opts)(mockRequest, mockResponse, mockNext);
 
     assert(mockNext.calledOnceWithExactly())
   });
@@ -147,7 +160,7 @@ describe("CSRF Middleware enabled", () => {
 
     when(sessionMock.get<string>(SessionKey.CsrfToken)).thenReturn(csrfToken);
 
-    csrfRequestMiddleware(opts)(mockRequest, mockResponse, mockNext);
+    CsrfProtectionMiddleware(opts)(mockRequest, mockResponse, mockNext);
 
     assert(mockNext.calledOnceWithExactly())
   });
@@ -159,7 +172,7 @@ describe("CSRF Middleware enabled", () => {
 
     when(sessionMock.get<string>(SessionKey.CsrfToken)).thenReturn(csrfToken);
 
-    csrfRequestMiddleware(opts)(mockRequest, mockResponse, mockNext);
+    CsrfProtectionMiddleware(opts)(mockRequest, mockResponse, mockNext);
 
     assert(mockNext.calledWithMatch(sinon.match((error) => error instanceof CsrfTokensMismatchError && error.message === "Invalid CSRF token.")));
   });
@@ -171,7 +184,7 @@ describe("CSRF Middleware enabled", () => {
 
     when(sessionMock.get<string>(SessionKey.CsrfToken)).thenReturn(csrfToken);
 
-    csrfRequestMiddleware(opts)(mockRequest, mockResponse, mockNext);
+    CsrfProtectionMiddleware(opts)(mockRequest, mockResponse, mockNext);
 
     assert(mockNext.calledWithMatch(sinon.match((error) => error instanceof CsrfTokensMismatchError && error.message === "Invalid CSRF token.")));
   });
@@ -180,7 +193,7 @@ describe("CSRF Middleware enabled", () => {
     const sessionMock = mock(Session);
     const mockRequest = generateRequest(instance(sessionMock));
 
-    csrfRequestMiddleware(opts)(mockRequest, mockResponse, mockNext);
+    CsrfProtectionMiddleware(opts)(mockRequest, mockResponse, mockNext);
 
     assert(mockNext.calledOnceWith());
   });
@@ -192,10 +205,91 @@ describe("CSRF Middleware enabled", () => {
 
     when(sessionMock.get<string>(SessionKey.CsrfToken)).thenReturn(csrfToken);
 
-    csrfRequestMiddleware(opts)(mockRequest, mockResponse, mockNext);
+    CsrfProtectionMiddleware(opts)(mockRequest, mockResponse, mockNext);
 
     assert(mockNext.calledOnceWithExactly())
   });
+
+  it("Generates csrf token and stores in session when not found in session for non-mutable request", async () => {
+    const sessionMock = mock(Session);
+    const mockRequest = generateRequest(instance(sessionMock));
+    mockRequest.cookies = {
+      "_SID": cookie.value
+    }
+
+    when(sessionMock.data).thenReturn({
+      [SessionKey.Expires]: 1223123454
+    })
+
+    when(sessionMock.get<string>(SessionKey.CsrfToken)).thenReturn(undefined);
+    // @ts-ignore
+    opts.sessionStore.expects("store").once().withArgs(
+      sinon.match.defined,
+      sinon.match({
+        [SessionKey.Expires]: 1223123454,
+        [SessionKey.CsrfToken]: newCsrfToken
+      })
+    );
+
+    CsrfProtectionMiddleware({
+      ...(opts),
+      sessionStore: sessionStore
+    })(mockRequest, mockResponse, mockNext)
+
+    sinon.verify()
+
+  })
+
+  it("does not generate csrf token or store in session when not found in session for non-mutable request and not instructed to", async () => {
+    const sessionMock = mock(Session);
+    const mockRequest = generateRequest(instance(sessionMock));
+    mockRequest.cookies = {
+      "_SID": cookie.value
+    }
+
+    when(sessionMock.data).thenReturn({
+      [SessionKey.Expires]: 1223123454
+    })
+
+    when(sessionMock.get<string>(SessionKey.CsrfToken)).thenReturn(undefined);
+    // @ts-ignore
+    opts.sessionStore.expects("store").never();
+
+    CsrfProtectionMiddleware({
+      ...(opts),
+      createWhenCsrfTokenAbsent: false,
+      sessionStore: sessionStore
+    })(mockRequest, mockResponse, mockNext)
+
+    sinon.verify()
+
+  })
+
+
+
+  it("throws error when csrf token not found in session for mutable request", async () => {
+    const sessionMock = mock(Session);
+    const mockRequest = generateRequest(instance(sessionMock));
+    mockRequest.method = "POST"
+    mockRequest.cookies = {
+      "_SID": cookie.value
+    }
+
+    when(sessionMock.get<string>(SessionKey.CsrfToken)).thenReturn(undefined);
+    // @ts-ignore
+    opts.sessionStore.expects("store").never()
+
+    CsrfProtectionMiddleware({
+      ...(opts),
+      sessionStore: sessionStore
+    })(mockRequest, mockResponse, mockNext)
+
+    sinon.verify()
+
+    assert(mockNext.calledWithMatch(sinon.match((error) => 
+        error instanceof MissingCsrfSessionToken && error.message === "Session does not include CSRF token.")));
+
+  })
 
   describe("custom header", () => {
     it("can locate csrf token in custom header", () => {
@@ -204,17 +298,19 @@ describe("CSRF Middleware enabled", () => {
 
       const sessionMock = mock(Session);
       const mockRequest = generateRequest(instance(sessionMock), "blah", undefined);
-      
+
       mockRequest.headers[customHeaderName] = csrfToken;
       mockRequest.method = "POST";
-  
+
       when(sessionMock.get<string>(SessionKey.CsrfToken)).thenReturn(csrfToken);
-  
-      csrfRequestMiddleware({
+
+      CsrfProtectionMiddleware({
         enabled: true,
-        headerName: customHeaderName
+        headerName: customHeaderName,
+        sessionStore: {} as SessionStore,
+        csrfTokenFactory: () => newCsrfToken
       })(mockRequest, mockResponse, mockNext);
-  
+
       assert(mockNext.calledOnceWithExactly())
     })
   })
@@ -225,20 +321,22 @@ describe("CSRF Middleware enabled", () => {
       const customParameterName = "custom-csrf-token-parameter"
 
       const sessionMock = mock(Session);
-      const mockRequest = generateRequest(instance(sessionMock),undefined, "undefined");
-      
+      const mockRequest = generateRequest(instance(sessionMock), undefined, "undefined");
+
       mockRequest.method = "POST";
       mockRequest.body = {
         [customParameterName]: csrfToken
       }
-  
+
       when(sessionMock.get<string>(SessionKey.CsrfToken)).thenReturn(csrfToken);
-  
-      csrfRequestMiddleware({
+
+      CsrfProtectionMiddleware({
         enabled: true,
-        parameterName: customParameterName
+        parameterName: customParameterName,
+        sessionStore: {} as SessionStore,
+        csrfTokenFactory: () => newCsrfToken
       })(mockRequest, mockResponse, mockNext);
-  
+
       assert(mockNext.calledOnceWithExactly())
     })
   })
@@ -253,7 +351,9 @@ describe("CSRF Middleware disabled", () => {
   beforeEach(() => {
     redirectStub = sinon.stub()
     opts = {
-      enabled: false
+      enabled: false,
+      sessionStore: {} as SessionStore,
+      csrfTokenFactory: () => "newCsrfToken"
     }
     mockResponse = generateResponse()
     mockResponse.redirect = redirectStub
@@ -267,7 +367,7 @@ describe("CSRF Middleware disabled", () => {
 
     when(sessionMock.get<string>(SessionKey.CsrfToken)).thenReturn(csrfToken);
 
-    csrfRequestMiddleware(opts)(mockRequest, mockResponse, mockNext);
+    CsrfProtectionMiddleware(opts)(mockRequest, mockResponse, mockNext);
 
     assert(mockNext.calledOnceWithExactly())
   })
