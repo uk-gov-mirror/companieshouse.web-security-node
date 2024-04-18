@@ -1,7 +1,7 @@
 # web-security-node
 Security for web applications in node
 
-## `CsrfProtectionMiddleware`
+## Cross Site Request Forgery (CSRF) protection
 
 Express middleware which will protect an application from Cross Site Request
 Forgery (CSRF) attacks. The middleware works by looking for a token within the
