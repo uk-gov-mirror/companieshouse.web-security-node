@@ -15,7 +15,7 @@ will expect all requests from methods which modify data (for example
 1. Install the library (if not already installed).
 
     ```sh
-    npm i @companieshouse/web-security-node@^2.1.0
+    npm i @companieshouse/web-security-node@^3.0.0
     ```
 
 2. Define your options for your application
