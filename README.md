@@ -3,11 +3,12 @@ Security for web applications in node
 
 ## Cross Site Request Forgery (CSRF) protection
 
-Express middleware which will protect an application from Cross Site Request
-Forgery (CSRF) attacks. The middleware works by looking for a token within the
-request which should match a token held within the CHS session. The middleware
-will expect all requests from methods which modify data (for example
-`POST`/`DELETE`/`PUT`) to include the CSRF token. This implements a
+This library provides a Express middleware Request Handler which will protect
+an application from Cross Site Request Forgery (CSRF) attacks. The middleware
+works by looking for a token within the request which should match a token held
+within the CHS session. The middleware will expect all requests from methods
+which modify data (for example `POST`/`DELETE`/`PUT`) to include the CSRF
+token. This implements a
 [Synchronisation Token Pattern approach](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#synchronizer-token-pattern)
 
 ### Installation instructions
