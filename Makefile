@@ -12,6 +12,8 @@ clean:
 build:
 	npm i
 	npm run build
+	mkdir -p ./dist/web-security-node/components/csrf-token-input/
+	cp -r ./src/components/ ./dist/web-security-node/components/
 
 .PHONY: security-check
 security-check:
