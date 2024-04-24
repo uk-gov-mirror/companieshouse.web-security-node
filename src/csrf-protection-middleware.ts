@@ -166,6 +166,8 @@ const csrfFilter = (options: CsrfOptions): RequestHandler => {
 
 const modifiedRender = (res: Response, csrfToken: string) => {
     const originalRender = res.render;
+    originalRender.bind(res);
+
     return (view: string, parametersOrCallback?: object | ((err: Error, html: string) => void), callback?: (err: Error, html: string) => void) => {
         if (typeof parametersOrCallback === "object") {
             return originalRender(
