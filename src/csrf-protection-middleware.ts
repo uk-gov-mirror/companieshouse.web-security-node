@@ -168,7 +168,7 @@ const modifiedRender = (res: Response, csrfToken: string) => {
     const originalRender = res.render;
     originalRender.bind(res);
 
-    return (view: string, parametersOrCallback?: object | ((err: Error, html: string) => void), callback?: (err: Error, html: string) => void) => {
+    const newRender = (view: string, parametersOrCallback?: object | ((err: Error, html: string) => void), callback?: (err: Error, html: string) => void) => {
         if (typeof parametersOrCallback === "object") {
             return originalRender(
                 view, {
@@ -180,4 +180,7 @@ const modifiedRender = (res: Response, csrfToken: string) => {
         }
         return originalRender(view, parametersOrCallback, callback)
     }
+    newRender.bind(res);
+    
+    return newRender;
 }
