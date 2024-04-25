@@ -265,7 +265,17 @@ describe("CSRF Middleware enabled", () => {
 
   })
 
+  it("sets the csrf token as part of locals", () => {
+    const csrfToken = "0fb9a779-2262-410f-a075-7f1359f142b6";
+    const sessionMock = mock(Session);
+    const mockRequest = generateRequest(instance(sessionMock), "e1f1ba25-e129-490c-9675-47805b878dcd", csrfToken, "POST");
 
+    when(sessionMock.get<string>(SessionKey.CsrfToken)).thenReturn(csrfToken);
+
+    CsrfProtectionMiddleware(opts)(mockRequest, mockResponse, mockNext);
+
+    assert.equal(mockResponse.locals.csrfToken, csrfToken)
+  })
 
   it("throws error when csrf token not found in session for mutable request", async () => {
     const sessionMock = mock(Session);
