@@ -115,6 +115,10 @@ const csrfFilter = (options: CsrfOptions): RequestHandler => {
 
             const sessionCsrfToken = req.session.get<string>(SessionKey.CsrfToken)
 
+            // The token is assigned as a local so that views can reference it, this function
+            // will apply the supplied token to the variable
+            const applyCsrfTokenToLocals = (csrfTokenToUse: string) => res.locals.csrfToken = csrfTokenToUse;
+
             if (MUTABLE_METHODS.includes(req.method)) {
                 // When the request is for a method which likely mutates the
                 // state of the application check that it is possible
@@ -132,28 +136,30 @@ const csrfFilter = (options: CsrfOptions): RequestHandler => {
                     throw new CsrfTokensMismatchError('Invalid CSRF token.')
                 }
 
-                // Modify the render function to drop the csrfToken into the form variables when called
-                res.render = modifiedRender(res, sessionCsrfToken);
-            } else if (
-                !sessionCsrfToken && options.createWhenCsrfTokenAbsent !== false) {
+                applyCsrfTokenToLocals(sessionCsrfToken);
+            } else if (!sessionCsrfToken) {
+                if (options.createWhenCsrfTokenAbsent !== false) {
+                    // When there is no CSRF token in the CHS session and the options
+                    // generate a new token and store in the session
+                    const csrfToken = csrfTokenFactory();
+                    const newSessionData = {
+                        ...(req.session.data),
+                        [SessionKey.CsrfToken]: csrfToken
+                    }
 
-                // When there is no CSRF token in the CHS session and the options
-                // generate a new token and store in the session
-                const csrfToken = csrfTokenFactory();
-                const newSessionData = {
-                    ...(req.session.data),
-                    [SessionKey.CsrfToken]: csrfToken
+                    req.session = new Session(newSessionData);
+
+                    await options.sessionStore.store(
+                        Cookie.createFrom(req.cookies[cookieName]),
+                        newSessionData
+                    )
+
+                    applyCsrfTokenToLocals(csrfToken);
+                } else {
+                    throw new MissingCsrfSessionToken("CSRF token not found in session.");
                 }
-
-                req.session = new Session(newSessionData);
-
-                await options.sessionStore.store(
-                    Cookie.createFrom(req.cookies[cookieName]),
-                    newSessionData
-                )
-
-                // Modify the render function to drop the csrfToken into the form variables when called
-                res.render = modifiedRender(res, csrfToken);
+            } else  {
+                applyCsrfTokenToLocals(sessionCsrfToken);
             }
 
             return next();
@@ -162,25 +168,4 @@ const csrfFilter = (options: CsrfOptions): RequestHandler => {
             return next(err)
         }
     }
-}
-
-const modifiedRender = (res: Response, csrfToken: string) => {
-    const originalRender = res.render;
-    originalRender.bind(res);
-
-    const newRender = (view: string, parametersOrCallback?: object | ((err: Error, html: string) => void), callback?: (err: Error, html: string) => void) => {
-        if (typeof parametersOrCallback === "object") {
-            return originalRender(
-                view, {
-                    ...parametersOrCallback,
-                    csrfToken: csrfToken
-                },
-                callback
-            )
-        }
-        return originalRender(view, parametersOrCallback, callback)
-    }
-    newRender.bind(res);
-    
-    return newRender;
 }
