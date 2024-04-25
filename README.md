@@ -38,6 +38,7 @@ token. This implements a
     // apply other middlewares
 
     app.use(cookieParser());
+    app.use(express.urlencoded({ extended: true }));
     const cookieName = '__SID'
 
     const cookieConfig = {
@@ -55,8 +56,13 @@ token. This implements a
         enabled: true,
         sessionCookieName: cookieName
     }
+    app.use(createLoggerMiddleware(config.applicationNamespace));
+    
+    // It is important that CSRF Protection follows the Sesion and urlencoded
+    // Middlewares, maybe put at end of the middleware chain (before
+    // controllers)
     app.use(CsrfProtectionMiddleware(csrfMiddlewareOptions))
-
+    app.use(helmet());
     ```
 
 3. Amend the Nunjucks configuration to add the thirdparty templates from this library:
@@ -122,7 +128,8 @@ A Request Handler capable of being used as a express Middleware function. Its
 responsibility is checking that all mutable requests include a csrf token which
 indicates that they originated from the same CHS session and not an CSRF
 attempt. The middleware expects that all mutable requests contain a token which
-matches a token stored within the CHS session.
+matches a token stored within the CHS session. It will add `csrfToken` to
+locals so that views can reference it as a variable.
 
 ##### Parameters
 
