@@ -73,7 +73,7 @@ token. This implements a
           "dist/views",
           "node_modules/govuk-frontend/",
           "node_modules/govuk-frontend/components/",
-          "node_modules/@companies-house/web-security-node/"
+          "node_modules/@companies-house/"
       ], nunjucksConfig)
     ```
 
