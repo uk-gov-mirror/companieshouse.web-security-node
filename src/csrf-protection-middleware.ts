@@ -115,6 +115,8 @@ const csrfFilter = (options: CsrfOptions): RequestHandler => {
 
             const sessionCsrfToken = req.session.get<string>(SessionKey.CsrfToken)
 
+            // The token is assigned as a local so that views can reference it, this function
+            // will apply the supplied token to the variable
             const applyCsrfTokenToLocals = (csrfTokenToUse: string) => res.locals.csrfToken = csrfTokenToUse;
 
             if (MUTABLE_METHODS.includes(req.method)) {
