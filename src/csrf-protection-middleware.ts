@@ -104,8 +104,13 @@ const csrfFilter = (options: CsrfOptions): RequestHandler => {
             // the request if there is no session set, probably the result of
             // application misconfiguration
             if (!req.session) {
-                logger.debug(`${appName} - handler: Session object is missing!`)
-                throw new Error('Session not set.')
+                logger.error(`${appName} - handler: Session object is missing!`)
+                
+                if (MUTABLE_METHODS.includes(req.method)) {
+                    throw new Error('Session not set.')
+                } else {
+                    return next();
+                }
             }
 
             const headerName = options.headerName || DEFAULT_CSRF_TOKEN_HEADER
