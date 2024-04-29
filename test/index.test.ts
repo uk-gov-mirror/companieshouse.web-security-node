@@ -263,6 +263,61 @@ describe("CSRF Middleware enabled", () => {
 
     sinon.verify()
 
+    assert(mockNext.calledOnceWith());
+  })
+
+  it("raises error when post and no session set", async () => {
+    const csrfToken = "0fb9a779-2262-410f-a075-7f1359f142b6";
+    const sessionMock = mock(Session);
+    const mockRequest = generateRequest(undefined, csrfToken, undefined, "POST");
+    mockRequest.cookies = {
+      "_SID": cookie.value
+    }
+
+    when(sessionMock.data).thenReturn({
+      [SessionKey.Expires]: 1223123454
+    })
+
+
+    when(sessionMock.get<string>(SessionKey.CsrfToken)).thenReturn(undefined);
+
+    CsrfProtectionMiddleware({
+      ...(opts),
+      createWhenCsrfTokenAbsent: false,
+      sessionStore: sessionStore
+    })(mockRequest, mockResponse, mockNext)
+
+    sinon.verify()
+  
+    const nextCall = mockNext.getCall(0)
+
+    assert(nextCall.args[0] instanceof Error)
+    assert(nextCall.args[0].message == "Session not set.")
+  })
+
+  it("calls next when get and no session set", async () => {
+    const sessionMock = mock(Session);
+    const mockRequest = generateRequest(undefined);
+    mockRequest.cookies = {
+      "_SID": cookie.value
+    }
+
+    when(sessionMock.data).thenReturn({
+      [SessionKey.Expires]: 1223123454
+    })
+
+    // @ts-ignore
+    opts.sessionStore.expects("store").never();
+
+    CsrfProtectionMiddleware({
+      ...(opts),
+      createWhenCsrfTokenAbsent: false,
+      sessionStore: sessionStore
+    })(mockRequest, mockResponse, mockNext)
+
+    sinon.verify()
+
+    assert(mockNext.calledOnceWith());
   })
 
   it("sets the csrf token as part of locals", () => {
