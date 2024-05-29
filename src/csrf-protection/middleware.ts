@@ -6,6 +6,11 @@ import { SessionKey } from "@companieshouse/node-session-handler/lib/session/key
 import { createLogger } from "@companieshouse/structured-logging-node";
 import { Cookie } from "@companieshouse/node-session-handler/lib/session/model/Cookie";
 
+import {
+    SessionUnsetError,
+    MissingCsrfSessionToken,
+    CsrfTokensMismatchError
+} from './errors'
 
 const APP_NAME = 'web-security-node'
 const logger = createLogger(APP_NAME)
@@ -64,28 +69,6 @@ export interface CsrfOptions {
      */
     parameterName?: string
 }
-
-/**
- * Base class for all Errors raised as a result of CSRF filtering
- */
-export class CsrfError extends Error {}
-
-/**
- * An Error thrown when CSRF token does not match the expected token held
- * within session
- */
-export class CsrfTokensMismatchError extends CsrfError { }
-
-/**
- * An error thrown when CSRF token is not held within the Session when
- * validating a request.
- */
-export class MissingCsrfSessionToken extends CsrfError { }
-
-/**
- * A CSRF Error thrown when the session is unset
- */
-export class SessionUnsetError extends CsrfError { }
 
 /**
  * Express middleware which will filter out requests believed to be as a result

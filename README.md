@@ -20,10 +20,10 @@ token. This implements a
     ```
 
 2. Define the options for the middleware and add the middleware to the
-  application
+  application. Optionally, you can add the error handler too.
 
     ```typescript
-    import { CsrfProtectionMiddleware } from " @companieshouse/web-security-node"
+    import { CsrfProtectionMiddleware, CsrfFailureErrorHandler } from " @companieshouse/web-security-node"
     import {
         SessionStore,
         SessionMiddleware
@@ -63,6 +63,13 @@ token. This implements a
     // controllers)
     app.use(CsrfProtectionMiddleware(csrfMiddlewareOptions))
     app.use(helmet());
+
+    // Add other middlewares and routers
+
+    // (*OPTIONAL* but recommended) add the error handler
+    app.use(CsrfFailureErrorHandler())
+
+    // Add default error handler **AFTER** the CSRF handler
     ```
 
 3. Amend the Nunjucks configuration to add the thirdparty templates from this library:
@@ -141,6 +148,34 @@ locals so that views can reference it as a variable.
 
 This function is the default CSRF issuing function, it essentially provides an
 uuid.
+
+#### `CsrfErrorHandlerOptions` interface
+
+Provides the configuration to the `csrfFailureErrorHandler` customising the
+behaviour.
+
+<!-- markdownlint-disable-next-line MD024 -->
+##### Properties
+
+* `responseMappings` (*`ResponseMapping`*) - Provides the
+  `statusCode` and `failureReason` for the supplied exceptions
+* `defaultStatusCode` (*`number`*) - When set specifies the status code to
+  respond with
+* `defaultFailureReason` (*`string`*) - When set specifies the body of the
+  response
+
+#### `ResponseMapping` interface
+
+Provides the mappings for each exception type emmitted by the CSRF middleware
+
+It is a mapping from Exception name to object containing optional properties:
+`statusCode` (*`number`*) and `failureReason` (*`string`*).
+
+#### `CsrfFailureErrorHandler`
+
+Provides an Express error handler which can handle CSRF failures. It uses the
+configuration provided in the options object to determine the response based on
+the error supplied. Will not do anything where the Error is not a `CsrfError`.
 
 #### Exceptions
 
