@@ -144,6 +144,13 @@ uuid.
 
 #### Exceptions
 
+**`CsrfError`** - Base class for all errors thrown by middleware
+
+**`SessionUnsetError`** - Thrown when a mutable request is received and the
+session has not been set on the request. Likely due to application
+misconfiguration. Check that the session handler is placed **before** the CSRF
+middleware.
+
 **`CsrfTokensMismatchError`** - Thrown when the CSRF token is either missing
 in the mutable request or does not match the CSRF token within the CHS session.
 

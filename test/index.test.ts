@@ -12,6 +12,7 @@ import {
   generateSignInInfo, generateSignInInfoAuthedForCompany
 } from './mockGeneration'
 import { Cookie } from '@companieshouse/node-session-handler/lib/session/model/Cookie'
+import { CsrfError, SessionUnsetError } from '../src/csrf-protection-middleware'
 
 describe('Authentication Middleware', () => {
   const mockReturnUrl = 'accounts/signin?return_to=origin'
@@ -291,7 +292,7 @@ describe("CSRF Middleware enabled", () => {
   
     const nextCall = mockNext.getCall(0)
 
-    assert(nextCall.args[0] instanceof Error)
+    assert(nextCall.args[0] instanceof SessionUnsetError)
     assert(nextCall.args[0].message == "Session not set.")
   })
 
