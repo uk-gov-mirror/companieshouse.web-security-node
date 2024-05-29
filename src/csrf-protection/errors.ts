@@ -1,12 +1,7 @@
 /**
  * Base class for all Errors raised as a result of CSRF filtering
  */
-export class CsrfError extends Error {
-
-    className(): string {
-        return this.constructor.name
-    }
-}
+export class CsrfError extends Error { }
 
 /**
  * An Error thrown when CSRF token does not match the expected token held
