@@ -1,19 +1,23 @@
-import { Session, SessionStore } from "@companieshouse/node-session-handler";
-import { NextFunction, Request, RequestHandler, Response } from "express";
-import { v4 as uuidv4 } from 'uuid';
-import expressAsyncHandler from "express-async-handler";
-import { SessionKey } from "@companieshouse/node-session-handler/lib/session/keys/SessionKey";
-import { createLogger } from "@companieshouse/structured-logging-node";
-import { Cookie } from "@companieshouse/node-session-handler/lib/session/model/Cookie";
-
+import { Session, SessionStore } from '@companieshouse/node-session-handler'
+import { SessionKey } from '@companieshouse/node-session-handler/lib/session/keys/SessionKey'
+import { Cookie } from '@companieshouse/node-session-handler/lib/session/model/Cookie'
+import { createLogger } from '@companieshouse/structured-logging-node'
+import { NextFunction, Request, RequestHandler, Response } from 'express'
+import expressAsyncHandler from 'express-async-handler'
+import { v4 as uuidv4 } from 'uuid'
+import {
+    CsrfTokensMismatchError,
+    MissingCsrfSessionToken,
+    SessionUnsetError
+} from './errors'
 
 const APP_NAME = 'web-security-node'
 const logger = createLogger(APP_NAME)
 
-const DEFAULT_CSRF_TOKEN_HEADER = "X-CSRF-TOKEN"
-const DEFAULT_CSRF_TOKEN_PARAMETER_NAME = "_csrf"
+const DEFAULT_CSRF_TOKEN_HEADER = 'X-CSRF-TOKEN'
+const DEFAULT_CSRF_TOKEN_PARAMETER_NAME = '_csrf'
 const MUTABLE_METHODS = ['POST', 'DELETE', 'PUT', 'PATCH']
-const DEFAULT_CHS_SESSION_COOKIE_NAME = "_SID";
+const DEFAULT_CHS_SESSION_COOKIE_NAME = '_SID'
 
 /**
  * The token factory which is used by default when not supplied in the
@@ -53,7 +57,7 @@ export interface CsrfOptions {
      * to fail when it is absent.
      */
     createWhenCsrfTokenAbsent?: boolean
-    
+
     /**
      * Name of the request header to look for the CSRF token
      */
@@ -66,27 +70,15 @@ export interface CsrfOptions {
 }
 
 /**
- * An Error thrown when CSRF token does not match the expected token held
- * within session
- */
-export class CsrfTokensMismatchError extends Error { }
-
-/**
- * An error thrown when CSRF token is not held within the Session when
- * validating a request.
- */
-export class MissingCsrfSessionToken extends Error { }
-
-/**
  * Express middleware which will filter out requests believed to be as a result
  * of Cross Site Request Forgery attacks. These are identified by requests
  * to mutable endpoints which do not contain the expected CSRF token. This
  * is implementing the Synchronisation Token Pattern approach.
- * 
+ *
  * Depending on the the properties provided will modify the behaviour
  */
 export const CsrfProtectionMiddleware = (csrfOptions: CsrfOptions): RequestHandler => {
-    return expressAsyncHandler(csrfFilter(csrfOptions));
+    return expressAsyncHandler(csrfFilter(csrfOptions))
 }
 
 const csrfFilter = (options: CsrfOptions): RequestHandler => {
@@ -105,31 +97,31 @@ const csrfFilter = (options: CsrfOptions): RequestHandler => {
             // application misconfiguration
             if (!req.session) {
                 logger.error(`${appName} - handler: Session object is missing!`)
-                
+
                 if (MUTABLE_METHODS.includes(req.method)) {
-                    throw new Error('Session not set.')
+                    throw new SessionUnsetError('Session not set.')
                 } else {
-                    return next();
+                    return next()
                 }
             }
 
             const headerName = options.headerName || DEFAULT_CSRF_TOKEN_HEADER
             const parameterName = options.parameterName || DEFAULT_CSRF_TOKEN_PARAMETER_NAME
             const csrfTokenFactory = options.csrfTokenFactory || defaultCsrfTokenFactory
-            const cookieName = options.sessionCookieName || DEFAULT_CHS_SESSION_COOKIE_NAME;
+            const cookieName = options.sessionCookieName || DEFAULT_CHS_SESSION_COOKIE_NAME
 
             const sessionCsrfToken = req.session.get<string>(SessionKey.CsrfToken)
 
             // The token is assigned as a local so that views can reference it, this function
             // will apply the supplied token to the variable
-            const applyCsrfTokenToLocals = (csrfTokenToUse: string) => res.locals.csrfToken = csrfTokenToUse;
+            const applyCsrfTokenToLocals = (csrfTokenToUse: string) => res.locals.csrfToken = csrfTokenToUse
 
             if (MUTABLE_METHODS.includes(req.method)) {
                 // When the request is for a method which likely mutates the
                 // state of the application check that it is possible
                 // to perform the check and check the tokens match
                 if (!sessionCsrfToken) {
-                    throw new MissingCsrfSessionToken("Session does not include CSRF token.")
+                    throw new MissingCsrfSessionToken('Session does not include CSRF token.')
                 }
 
                 // Token most likely to be in the request body so prioritise over headers
@@ -141,33 +133,33 @@ const csrfFilter = (options: CsrfOptions): RequestHandler => {
                     throw new CsrfTokensMismatchError('Invalid CSRF token.')
                 }
 
-                applyCsrfTokenToLocals(sessionCsrfToken);
+                applyCsrfTokenToLocals(sessionCsrfToken)
             } else if (!sessionCsrfToken) {
                 if (options.createWhenCsrfTokenAbsent !== false) {
                     // When there is no CSRF token in the CHS session and the options
                     // generate a new token and store in the session
-                    const csrfToken = csrfTokenFactory();
+                    const csrfToken = csrfTokenFactory()
                     const newSessionData = {
                         ...(req.session.data),
                         [SessionKey.CsrfToken]: csrfToken
                     }
 
-                    req.session = new Session(newSessionData);
+                    req.session = new Session(newSessionData)
 
                     await options.sessionStore.store(
                         Cookie.createFrom(req.cookies[cookieName]),
                         newSessionData
                     )
 
-                    applyCsrfTokenToLocals(csrfToken);
+                    applyCsrfTokenToLocals(csrfToken)
                 } else {
-                    throw new MissingCsrfSessionToken("CSRF token not found in session.");
+                    throw new MissingCsrfSessionToken('CSRF token not found in session.')
                 }
             } else  {
-                applyCsrfTokenToLocals(sessionCsrfToken);
+                applyCsrfTokenToLocals(sessionCsrfToken)
             }
 
-            return next();
+            return next()
         } catch (err) {
             logger.errorRequest(req, `Could not handle CSRF validation: ${err}`)
             return next(err)

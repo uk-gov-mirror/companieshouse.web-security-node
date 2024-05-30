@@ -5,13 +5,7 @@ import {ISignInInfo, IUserProfile} from '@companieshouse/node-session-handler/li
 import {createLogger} from '@companieshouse/structured-logging-node'
 import {NextFunction, Request, RequestHandler, Response} from 'express'
 
-export {
-  CsrfProtectionMiddleware,
-  CsrfOptions,
-  defaultCsrfTokenFactory,
-  CsrfTokensMismatchError,
-  MissingCsrfSessionToken
-} from './csrf-protection-middleware'
+export * from './csrf-protection'
 
 
 const APP_NAME = 'web-security-node'

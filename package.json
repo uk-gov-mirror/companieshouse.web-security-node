@@ -10,6 +10,7 @@
     "test": "mocha 'test/**/*.test.ts'",
     "build": "rm -rf ./dist; tsc",
     "lint": "tslint -p .",
+    "lint:fix": "tslint -p . --fix",
     "sonarqube": "sonar-scanner",
     "prepublishOnly": "[ ! -d node_modules ] && npm install; tsc",
     "postpublish": "rm -rf lib"
