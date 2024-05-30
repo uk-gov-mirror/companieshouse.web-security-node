@@ -6,11 +6,6 @@ export {
 } from './errors'
 
 export {
-    CsrfErrorHandlerOptions,
-    CsrfFailureErrorHandler
-} from './error-handler'
-
-export {
     defaultCsrfTokenFactory,
     CsrfOptions,
     CsrfProtectionMiddleware
