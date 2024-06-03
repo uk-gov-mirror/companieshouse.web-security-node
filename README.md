@@ -16,7 +16,7 @@ token. This implements a
 1. Install the library (if not already installed).
 
     ```sh
-    npm i @companieshouse/web-security-node@^3.2.0
+    npm i @companieshouse/web-security-node@^4.0.0
     ```
 
 2. Define the options for the middleware and add the middleware to the
