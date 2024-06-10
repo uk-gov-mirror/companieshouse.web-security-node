@@ -1,17 +1,19 @@
 {%- macro csrfError(params) -%}
-<section>
-    <h1 class="govuk-heading-xl govuk-!-margin-bottom-8">Sorry, something went wrong</h1>
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-l">Sorry, something went wrong</h1>
 
-    <p>We have not been able to save the information you submitted on the previous screen.
-    This may be because the page was inactive for too long, or because of a technical issue.</p>
+        <p class="govuk-body">We have not been able to save the information you submitted on the previous screen.
+        This may be because the page was inactive for too long, or because of a technical issue.</p>
 
-    <p>Try the following:</p>
+        <p class="govuk-body">Try the following:</p>
 
-    <ul>
-        <li>use the back link to return to the previous screen and resubmit the information</li>
-        <li>sign out of the service, and then sign back in</li>
-    </ul>
+        <ul class="govuk-list govuk-list--bullet">
+            <li>use the back link to return to the previous screen and resubmit the information</li>
+            <li>sign out of the service, and then sign back in</li>
+        </ul>
 
-    <p>If the problem continues, <a href="https://www.gov.uk/contact-companies-house">contact us</a> for help.</p>
-</section>
+        <p class="govuk-body">If the problem continues, <a href="https://www.gov.uk/contact-companies-house">contact us</a> for help.</p>
+    </div>
+</div>
 {%- endmacro -%}
