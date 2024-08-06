@@ -111,3 +111,61 @@ describe('Authentication Middleware with company number', () => {
     assert(redirectStub.notCalled)
   })
 })
+
+describe('Test tokenPermissions conditionals in authMiddleware', () => {
+  // todo
+}
+
+describe('Test tokenPermissionsPresent function', () => {
+  let opts: AuthOptions
+  let userProfile:
+
+  beforeEach(() => {
+    opts = {
+      returnUrl: 'origin',
+      chsWebUrl: 'accounts',
+      companyNumber: '12345678'
+      // todo -- add requestScopeAndPermissions
+    }
+
+    userProfile = {
+      // todo
+    }
+  })
+
+  it('When the requestScopeAndPermissions tokenPermissions is not present, return true', () => {
+  })
+
+  it('When the userProfile tokenPermissions is not present, return false', () => {
+    // todo -- i think this is right, in this case we would still want to add the request tokenPermissions to the redirectURL ?
+  })
+
+  it('When the requestScopeAndPermissions tokenPermissions is a strict subset of userProfile tokenPermissions, return true', () => {
+  })
+
+  it('When the requestScopeAndPermissions tokenPermissions matches userProfile tokenPermissions, return true', () => {
+  })
+
+  it('When the userProfile tokenPermissions is a strict subset of requestScopeAndPermissions tokenPermissions, return false', () => {
+  })
+})
+
+/* // for reference during dev:
+
+    function tokenPermissionsPresent(request: RequestScopeAndPermissions, userProfile: IUserProfile): boolean {
+      if (!request.tokenPermissions) {
+        return true
+      }
+
+      const userTokenPermissions = userProfile[UserProfileKeys.TokenPermissions]
+
+      if (!userTokenPermissions) {
+        return false
+      }
+
+      return Object.keys(request.tokenPermissions).every(key =>
+        Object.prototype.hasOwnProperty.call(userTokenPermissions, key)
+      )
+    }
+
+*/

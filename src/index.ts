@@ -15,6 +15,14 @@ export interface AuthOptions {
   returnUrl: string
   chsWebUrl: string
   companyNumber?: string
+  requestScopeAndPermissions?: RequestScopeAndPermissions
+}
+
+export interface RequestScopeAndPermissions {
+  scope: string
+  tokenPermissions: { // this field is mandatory as specified in the ticket -- if we want it optional we would use "tokenPermissions?: { ... }"
+    [key: string]: any // apparently if we use "unknown" instead of "any" this will force us to do type checks - any thoughts?
+  }
 }
 
 export const authMiddleware = (options: AuthOptions): RequestHandler => (
@@ -36,6 +44,10 @@ export const authMiddleware = (options: AuthOptions): RequestHandler => (
   }
 
   if (!req.session) {
+    if(options.requestScopeAndPermissions) {
+      redirectURI = redirectURI.concat(`&additional_scope=${options.requestScopeAndPermissions.scope}`)
+    }
+
     logger.debug(`${appName} - handler: Session object is missing!`)
     return res.redirect(redirectURI)
   }
@@ -48,6 +60,11 @@ export const authMiddleware = (options: AuthOptions): RequestHandler => (
   if (!signedIn) {
     logger.info(`${appName} - handler: userId=${userId}, Not signed in... Redirecting to: ${redirectURI}`)
     return res.redirect(redirectURI)
+  }
+  else {
+    if(!tokenPermissionsPresent(options.requestScopeAndPermissions, userProfile)) {
+      redirectURI = redirectURI.concat(`&additional_scope=${options.requestScopeAndPermissions.scope}`)
+    }
   }
 
   if (options.companyNumber && !isAuthorisedForCompany(options.companyNumber, signInInfo)) {
@@ -66,4 +83,20 @@ function isAuthorisedForCompany(companyNumber: string, signInInfo: ISignInInfo):
   }
 
   return authorisedCompany.localeCompare(companyNumber) === 0
+}
+
+function tokenPermissionsPresent(request: RequestScopeAndPermissions, userProfile: IUserProfile): boolean {
+  if (!request.tokenPermissions) {
+    return true
+  }
+
+  const userTokenPermissions = userProfile[UserProfileKeys.TokenPermissions]
+
+  if (!userTokenPermissions) {
+    return false
+  }
+
+  return Object.keys(request.tokenPermissions).every(key =>
+    Object.prototype.hasOwnProperty.call(userTokenPermissions, key)
+  )
 }
