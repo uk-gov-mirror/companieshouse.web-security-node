@@ -1,6 +1,7 @@
 import { Session} from '@companieshouse/node-session-handler'
 import { SessionKey } from '@companieshouse/node-session-handler/lib/session/keys/SessionKey'
-import { ISignInInfo } from '@companieshouse/node-session-handler/lib/session/model/SessionInterfaces'
+import { ISignInInfo, IUserProfile } from '@companieshouse/node-session-handler/lib/session/model/SessionInterfaces'
+import {UserProfileKeys} from '@companieshouse/node-session-handler/lib/session/keys/UserProfileKeys'
 import { assert, expect } from 'chai'
 import { Response } from 'express'
 import sinon from 'sinon'
@@ -118,9 +119,10 @@ describe('Test tokenPermissions conditionals in authMiddleware', () => {
 
 describe('Test tokenPermissionsPresent function', () => {
   let options: AuthOptions
-//   let userProfile: IUserProfile
+  let userProfile: IUserProfile
 
   beforeEach(() => {
+
     options = {
       returnUrl: 'origin',
       chsWebUrl: 'accounts',
@@ -133,76 +135,87 @@ describe('Test tokenPermissionsPresent function', () => {
       }
     }
 
-//     userProfile = {
-//       // todo
-//     }
+    userProfile = {
+      [UserProfileKeys.TokenPermissions]: {
+        "overseas_entities": "create,update,delete",
+        "user_orders": "create,read,update,delete",
+        "acsp_profile": "create"
+      }
+
+    }
   })
 
-  // should we add a test for the case for requestScopeAndPermissions.tokenPermissions is undefined/null/not present?
-
-  it('When the userProfile tokenPermissions is not present, return true', () => {
-      assert(additionalScopeIsRequired(options.requestScopeAndPermissions, {}))
-  })
-
-  it('When the requestScopeAndPermissions is undefined, return false', () => {
+    it('When the requestScopeAndPermissions is undefined, return false', () => {
 
       assert(!additionalScopeIsRequired(undefined, {}))
       assert(!additionalScopeIsRequired(null, {}))
+    })
+
+    it('When the userProfile tokenPermissions is not present, return true', () => {
+      assert(additionalScopeIsRequired(options.requestScopeAndPermissions, {}))
+    })
+
+    it('When the requestScopeAndPermissions tokenPermissions contains a key not present in userProfile tokenPermissions, return true', () => {
+      assert(additionalScopeIsRequired(options.requestScopeAndPermissions, userProfile))
+    })
+
+    it('When the requestScopeAndPermissions tokenPermissions contains a key in userProfile tokenPermissions, but the userProfile token permission lacks a request value, return true', () => {
+      userProfile = {
+        [UserProfileKeys.TokenPermissions]: {
+          "overseas_entities": "create,update,delete",
+          "user_orders": "create,read,update,delete",
+          "acsp_profile": "create",
+          "test_permission": "create"  // missing update
+        }
+      }
+      assert(additionalScopeIsRequired(options.requestScopeAndPermissions, userProfile))
+    })
+
+    it('When the requestScopeAndPermissions tokenPermissions contains a key in userProfile tokenPermissions and the corresponding userProfile token permission request value matches, return false', () => {
+      userProfile = {
+        [UserProfileKeys.TokenPermissions]: {
+          "overseas_entities": "create,update,delete",
+          "user_orders": "create,read,update,delete",
+          "acsp_profile": "create",
+          "test_permission": "create,update"  
+        }
+      }
+      assert( ! additionalScopeIsRequired(options.requestScopeAndPermissions, userProfile))
+ 
+    })
+
+    it('When the requestScopeAndPermissions tokenPermissions contains a key in userProfile tokenPermissions and the corresponding userProfile token permission request value matches (but in wrong order and has spaces), return false', () => {
+      userProfile = {
+        [UserProfileKeys.TokenPermissions]: {
+          "overseas_entities": "create,update,delete",
+          "user_orders": "create,read,update,delete",
+          "acsp_profile": "create",
+          "test_permission": "update , create"  
+        }
+      }
+      assert( ! additionalScopeIsRequired(options.requestScopeAndPermissions, userProfile))
+ 
+    })
+
+
+    it('When the requestScopeAndPermissions tokenPermissions contains a key in userProfile tokenPermissions and the corresponding userProfile token permission request value matches (request permissions in different order), return false', () => {
+      userProfile = {
+        [UserProfileKeys.TokenPermissions]: {
+          "overseas_entities": "create,update,delete",
+          "user_orders": "create,read,update,delete",
+          "acsp_profile": "create",
+          "test_permission": "create,update"  
+        }
+      }
+      if (options.requestScopeAndPermissions) {
+         options.requestScopeAndPermissions.tokenPermissions = { "test_permission": "update,create" }
+
+         assert( ! additionalScopeIsRequired(options.requestScopeAndPermissions, userProfile))
+      } else {
+        expect.fail("has test data been changed ?");
+      }
+ 
+    })
+
   })
 
-})
-
-//   it('When the requestScopeAndPermissions tokenPermissions contains a key not present in userProfile tokenPermissions, return true', () => {
-//   })
-
-//   it('When the requestScopeAndPermissions tokenPermissions contains a key in userProfile tokenPermissions, but the userProfile token permission lacks a request value, return true', () => {
-//   })
-//
-//   it('When the requestScopeAndPermissions tokenPermissions contains a key in userProfile tokenPermissions, and the corresponding userProfile token permission request value matches, return false', () => {
-//   })
-//
-//   it('When the requestScopeAndPermissions tokenPermissions contains a key in userProfile tokenPermissions, and the corresponding userProfile token permission request value matches and contains additional scopes, return false', () => {
-//   })
-
-/*
-// for reference whilst writing tests:
-
-// return TRUE if
-//   (1) any key in requestScopeAndPermissions.tokenPermissions object is missing from userProfile.tokenPermissions object, OR
-//   (2) a value of a key in requestScopeAndPermissions.tokenPermissions object is not in the corresponding value of the same
-//       key in userProfile.tokenPermissions
-// note for (2) we would need to map values "create,update,etc" => "create", "update", "etc" to get individual values
-function additionalScopeIsRequired(requestScopeAndPermissions: RequestScopeAndPermissions, userProfile: IUserProfile): boolean {
-
-  const userProfileTokenPermissions = userProfile[UserProfileKeys.TokenPermissions];
-
-  // belt and braces
-  if ( !userProfileTokenPermissions ) {
-    return true;
-  }
-
-  // for each key that we've requested
-  for (const key in requestScopeAndPermissions.tokenPermissions ) {
-
-    if ( !userProfileTokenPermissions.hasOwnProperty(key)) { // e.g. { key1: 'value' }.hasOwnProperty('key1') will return true
-      return true; // key is missing in userProfile, so since we request this permission we will need to add it?
-    }
-
-    const requestValue = requestScopeAndPermissions.tokenPermissions[key];
-    const userProfileValue = userProfileTokenPermissions[key];
-
-    // split, sort, and join the values to compare them irrespective of order
-    const normaliseFunction = ([array]: string) => array.split(',').map(item => item.trim())
-                                                   .sort((a, b) => a.localeCompare(b)).join(',');
-
-    const requestArray = normaliseFunction(requestValue);
-    const userProfileArray = normaliseFunction(userProfileValue);
-
-    if ( !requestArray.includes(userProfileArray) ) {
-      return true; // values differ
-    }
-  }
-
-  return false;
-}
-*/

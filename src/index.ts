@@ -92,26 +92,26 @@ function isAuthorisedForCompany(companyNumber: string, signInInfo: ISignInInfo):
 export function additionalScopeIsRequired(requestScopeAndPermissions: RequestScopeAndPermissions | undefined | null, userProfile: IUserProfile): boolean {
 
   // user has not specified any scopes
-  if(!requestScopeAndPermissions) {
+  if (!requestScopeAndPermissions) {
     return false;
   }
 
-  if(!userProfile.hasOwnProperty('UserProfileKeys.TokenPermissions')) {
+  if (!userProfile.hasOwnProperty(UserProfileKeys.TokenPermissions)) {
     return true;
   }
 
   const userProfileTokenPermissions = userProfile[UserProfileKeys.TokenPermissions];
 
   // belt and braces
-  if ( !userProfileTokenPermissions ) {
+  if (!userProfileTokenPermissions) {
     return true;
   }
 
-  // for each key that we've requested
-  for (const key in requestScopeAndPermissions.tokenPermissions ) {
+  // check each requested key is in the user profile
+  for (const key in requestScopeAndPermissions.tokenPermissions) {
 
-    if ( !userProfileTokenPermissions.hasOwnProperty(key)) { // e.g. { key1: 'value' }.hasOwnProperty('key1') will return true
-      return true; // key is missing in userProfile, so since we request this permission we will need to add it?
+    if (!userProfileTokenPermissions.hasOwnProperty(key)) {
+      return true; // key is missing in userProfile, so since we request this permission we will need to add it
     }
 
     const requestValue = requestScopeAndPermissions.tokenPermissions[key];
@@ -119,13 +119,13 @@ export function additionalScopeIsRequired(requestScopeAndPermissions: RequestSco
 
     // split, sort, and join the values to compare them irrespective of order
     const normaliseFunction = ([array]: string) => array.split(',').map(item => item.trim())
-                                                   .sort((a, b) => a.localeCompare(b)).join(',');
+      .sort((a, b) => a.localeCompare(b)).join(',');
 
     const requestArray = normaliseFunction(requestValue);
     const userProfileArray = normaliseFunction(userProfileValue);
 
-    if ( !requestArray.includes(userProfileArray) ) {
-      return true; // values differ
+    if ( ! userProfileArray.includes(requestArray)) {
+      return true; // user profile does not have all the permissions for the requested key
     }
   }
 
