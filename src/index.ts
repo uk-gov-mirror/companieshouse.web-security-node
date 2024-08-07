@@ -2,6 +2,7 @@ import '@companieshouse/node-session-handler'
 import {SessionKey} from '@companieshouse/node-session-handler/lib/session/keys/SessionKey'
 import {SignInInfoKeys} from '@companieshouse/node-session-handler/lib/session/keys/SignInInfoKeys'
 import {ISignInInfo, IUserProfile} from '@companieshouse/node-session-handler/lib/session/model/SessionInterfaces'
+import {UserProfileKeys} from '@companieshouse/node-session-handler/lib/session/keys/UserProfileKeys'
 import {createLogger} from '@companieshouse/structured-logging-node'
 import {NextFunction, Request, RequestHandler, Response} from 'express'
 
@@ -20,9 +21,7 @@ export interface AuthOptions {
 
 export interface RequestScopeAndPermissions {
   scope: string
-  tokenPermissions: { // this field is mandatory as specified in the ticket -- if we want it optional we would use "tokenPermissions?: { ... }"
-    [key: string]: any // apparently if we use "unknown" instead of "any" this will force us to do type checks - any thoughts?
-  }
+  tokenPermissions: IUserProfile[UserProfileKeys.TokenPermissions] // { [permission: string]: string }
 }
 
 export const authMiddleware = (options: AuthOptions): RequestHandler => (
@@ -62,7 +61,7 @@ export const authMiddleware = (options: AuthOptions): RequestHandler => (
     return res.redirect(redirectURI)
   }
   else {
-    if(!tokenPermissionsPresent(options.requestScopeAndPermissions, userProfile)) {
+    if(options.requestScopeAndPermissions && additionalScopeIsRequired(options.requestScopeAndPermissions, userProfile)) {
       redirectURI = redirectURI.concat(`&additional_scope=${options.requestScopeAndPermissions.scope}`)
     }
   }
@@ -85,18 +84,35 @@ function isAuthorisedForCompany(companyNumber: string, signInInfo: ISignInInfo):
   return authorisedCompany.localeCompare(companyNumber) === 0
 }
 
-function tokenPermissionsPresent(request: RequestScopeAndPermissions, userProfile: IUserProfile): boolean {
-  if (!request.tokenPermissions) {
-    return true
-  }
-
-  const userTokenPermissions = userProfile[UserProfileKeys.TokenPermissions]
+// return TRUE if
+//   (1) any key in requestScopeAndPermissions.tokenPermissions object is missing from userProfile.tokenPermissions object, OR
+//   (2) a value of a key in requestScopeAndPermissions.tokenPermissions object is not in the corresponding value of the same
+//       key in userProfile.tokenPermissions
+// note for (2) we would need to map values "create,update,etc" => "create", "update", "etc" to get individual values
+function additionalScopeIsRequired(requestScopeAndPermissions: RequestScopeAndPermissions, userProfile: IUserProfile): boolean {
+  const userTokenPermissions = userProfile[UserProfileKeys.TokenPermissions];
 
   if (!userTokenPermissions) {
-    return false
+    return false; // should this not return true? if userTokenPermissions is undefined,
+                  // then we still need to add the requested permission key(s) & associated scopes?
   }
 
-  return Object.keys(request.tokenPermissions).every(key =>
-    Object.prototype.hasOwnProperty.call(userTokenPermissions, key)
-  )
+  for (const key in requestScopeAndPermissions.tokenPermissions) {
+    if (!userTokenPermissions.hasOwnProperty(key)) { // e.g. { key1: 'value' }.hasOwnProperty('key1') will return true
+      return true; // key is missing in userProfile, so since we request this permission we will need to add it?
+    }
+
+    const requestValue = requestScopeAndPermissions.tokenPermissions[key];
+    const userValue = userTokenPermissions[key];
+
+    // split, sort, and join the values to compare them irrespective of order
+    const requestArray = requestValue.split(',').map(item => item.trim()).sort();
+    const userArray = userValue.split(',').map(item => item.trim()).sort();
+
+    if (requestArray.join(',') !== userArray.join(',')) {
+      return true; // values differ
+    }
+  }
+
+  return false;
 }
