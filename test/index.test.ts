@@ -133,39 +133,58 @@ describe('Test tokenPermissionsPresent function', () => {
     }
   })
 
-  it('When the requestScopeAndPermissions tokenPermissions is not present, return true', () => {
-  })
+  // should we add a test for the case for requestScopeAndPermissions.tokenPermissions is undefined/null/not present?
 
   it('When the userProfile tokenPermissions is not present, return false', () => {
-    // todo -- i think this is right, in this case we would still want to add the request tokenPermissions to the redirectURL ?
+      // should this not return true? -- see my comment in additionalScopeIsRequired function
   })
 
-  it('When the requestScopeAndPermissions tokenPermissions is a strict subset of userProfile tokenPermissions, return true', () => {
+  it('When the requestScopeAndPermissions tokenPermissions contains a key not present in userProfile tokenPermissions, return true', () => {
   })
 
-  it('When the requestScopeAndPermissions tokenPermissions matches userProfile tokenPermissions, return true', () => {
+  it('When the requestScopeAndPermissions tokenPermissions contains a key in userProfile tokenPermissions, but the userProfile token permission lacks a request value, return true', () => {
   })
 
-  it('When the userProfile tokenPermissions is a strict subset of requestScopeAndPermissions tokenPermissions, return false', () => {
+  it('When the requestScopeAndPermissions tokenPermissions contains a key in userProfile tokenPermissions, and the corresponding userProfile token permission request value matches, return false', () => {
+  })
+
+  it('When the requestScopeAndPermissions tokenPermissions contains a key in userProfile tokenPermissions, and the corresponding userProfile token permission request value matches and contains additional scopes, return false', () => {
   })
 })
 
-/* // for reference during dev:
+/* // for reference whilst writing tests:
 
-    function tokenPermissionsPresent(request: RequestScopeAndPermissions, userProfile: IUserProfile): boolean {
-      if (!request.tokenPermissions) {
-        return true
-      }
+// return TRUE if
+//   (1) any key in requestScopeAndPermissions.tokenPermissions object is missing from userProfile.tokenPermissions object, OR
+//   (2) a value of a key in requestScopeAndPermissions.tokenPermissions object is not in the corresponding value of the same
+//       key in userProfile.tokenPermissions
+// note for (2) we would need to map values "create,update,etc" => "create", "update", "etc" to get individual values
+function additionalScopeIsRequired(requestScopeAndPermissions: RequestScopeAndPermissions, userProfile: IUserProfile): boolean {
+  const userTokenPermissions = userProfile[UserProfileKeys.TokenPermissions];
 
-      const userTokenPermissions = userProfile[UserProfileKeys.TokenPermissions]
+  if (!userTokenPermissions) {
+    return false; // should this not return true? if userTokenPermissions is undefined,
+                  // then we still need to add the requested permission key(s) & associated scopes?
+  }
 
-      if (!userTokenPermissions) {
-        return false
-      }
-
-      return Object.keys(request.tokenPermissions).every(key =>
-        Object.prototype.hasOwnProperty.call(userTokenPermissions, key)
-      )
+  for (const key in requestScopeAndPermissions.tokenPermissions) {
+    if (!userTokenPermissions.hasOwnProperty(key)) { // e.g. { key1: 'value' }.hasOwnProperty('key1') will return true
+      return true; // key is missing in userProfile, so since we request this permission we will need to add it?
     }
+
+    const requestValue = requestScopeAndPermissions.tokenPermissions[key];
+    const userValue = userTokenPermissions[key];
+
+    // split, sort, and join the values to compare them irrespective of order
+    const requestArray = requestValue.split(',').map(item => item.trim()).sort();
+    const userArray = userValue.split(',').map(item => item.trim()).sort();
+
+    if (requestArray.join(',') !== userArray.join(',')) {
+      return true; // values differ
+    }
+  }
+
+  return false;
+}
 
 */
