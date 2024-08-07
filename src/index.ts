@@ -89,27 +89,42 @@ function isAuthorisedForCompany(companyNumber: string, signInInfo: ISignInInfo):
 //   (2) a value of a key in requestScopeAndPermissions.tokenPermissions object is not in the corresponding value of the same
 //       key in userProfile.tokenPermissions
 // note for (2) we would need to map values "create,update,etc" => "create", "update", "etc" to get individual values
-function additionalScopeIsRequired(requestScopeAndPermissions: RequestScopeAndPermissions, userProfile: IUserProfile): boolean {
-  const userTokenPermissions = userProfile[UserProfileKeys.TokenPermissions];
+export function additionalScopeIsRequired(requestScopeAndPermissions: RequestScopeAndPermissions | undefined | null, userProfile: IUserProfile): boolean {
 
-  if (!userTokenPermissions) {
-    return false; // should this not return true? if userTokenPermissions is undefined,
-                  // then we still need to add the requested permission key(s) & associated scopes?
+  // user has not specified any scopes
+  if(!requestScopeAndPermissions) {
+    return false;
   }
 
-  for (const key in requestScopeAndPermissions.tokenPermissions) {
-    if (!userTokenPermissions.hasOwnProperty(key)) { // e.g. { key1: 'value' }.hasOwnProperty('key1') will return true
+  if(!userProfile.hasOwnProperty('UserProfileKeys.TokenPermissions')) {
+    return true;
+  }
+
+  const userProfileTokenPermissions = userProfile[UserProfileKeys.TokenPermissions];
+
+  // belt and braces
+  if ( !userProfileTokenPermissions ) {
+    return true;
+  }
+
+  // for each key that we've requested
+  for (const key in requestScopeAndPermissions.tokenPermissions ) {
+
+    if ( !userProfileTokenPermissions.hasOwnProperty(key)) { // e.g. { key1: 'value' }.hasOwnProperty('key1') will return true
       return true; // key is missing in userProfile, so since we request this permission we will need to add it?
     }
 
     const requestValue = requestScopeAndPermissions.tokenPermissions[key];
-    const userValue = userTokenPermissions[key];
+    const userProfileValue = userProfileTokenPermissions[key];
 
     // split, sort, and join the values to compare them irrespective of order
-    const requestArray = requestValue.split(',').map(item => item.trim()).sort();
-    const userArray = userValue.split(',').map(item => item.trim()).sort();
+    const normaliseFunction = ([array]: string) => array.split(',').map(item => item.trim())
+                                                   .sort((a, b) => a.localeCompare(b)).join(',');
 
-    if (requestArray.join(',') !== userArray.join(',')) {
+    const requestArray = normaliseFunction(requestValue);
+    const userProfileArray = normaliseFunction(userProfileValue);
+
+    if ( !requestArray.includes(userProfileArray) ) {
       return true; // values differ
     }
   }

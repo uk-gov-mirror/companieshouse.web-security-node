@@ -5,7 +5,7 @@ import { assert, expect } from 'chai'
 import { Response } from 'express'
 import sinon from 'sinon'
 import { instance, mock, when } from 'ts-mockito'
-import { authMiddleware, AuthOptions } from '../src'
+import { authMiddleware, AuthOptions, additionalScopeIsRequired } from '../src'
 import {
   generateRequest,
   generateResponse,
@@ -114,45 +114,58 @@ describe('Authentication Middleware with company number', () => {
 
 describe('Test tokenPermissions conditionals in authMiddleware', () => {
   // todo
-}
+})
 
 describe('Test tokenPermissionsPresent function', () => {
-  let opts: AuthOptions
-  let userProfile:
+  let options: AuthOptions
+//   let userProfile: IUserProfile
 
   beforeEach(() => {
-    opts = {
+    options = {
       returnUrl: 'origin',
       chsWebUrl: 'accounts',
-      companyNumber: '12345678'
-      // todo -- add requestScopeAndPermissions
+      companyNumber: '12345678',
+      requestScopeAndPermissions: {
+        scope: "test_scope",
+        tokenPermissions: {
+          "test_permission": "create,update"
+        }
+      }
     }
 
-    userProfile = {
-      // todo
-    }
+//     userProfile = {
+//       // todo
+//     }
   })
 
   // should we add a test for the case for requestScopeAndPermissions.tokenPermissions is undefined/null/not present?
 
-  it('When the userProfile tokenPermissions is not present, return false', () => {
-      // should this not return true? -- see my comment in additionalScopeIsRequired function
+  it('When the userProfile tokenPermissions is not present, return true', () => {
+      assert(additionalScopeIsRequired(options.requestScopeAndPermissions, {}))
   })
 
-  it('When the requestScopeAndPermissions tokenPermissions contains a key not present in userProfile tokenPermissions, return true', () => {
+  it('When the requestScopeAndPermissions is undefined, return false', () => {
+
+      assert(!additionalScopeIsRequired(undefined, {}))
+      assert(!additionalScopeIsRequired(null, {}))
   })
 
-  it('When the requestScopeAndPermissions tokenPermissions contains a key in userProfile tokenPermissions, but the userProfile token permission lacks a request value, return true', () => {
-  })
-
-  it('When the requestScopeAndPermissions tokenPermissions contains a key in userProfile tokenPermissions, and the corresponding userProfile token permission request value matches, return false', () => {
-  })
-
-  it('When the requestScopeAndPermissions tokenPermissions contains a key in userProfile tokenPermissions, and the corresponding userProfile token permission request value matches and contains additional scopes, return false', () => {
-  })
 })
 
-/* // for reference whilst writing tests:
+//   it('When the requestScopeAndPermissions tokenPermissions contains a key not present in userProfile tokenPermissions, return true', () => {
+//   })
+
+//   it('When the requestScopeAndPermissions tokenPermissions contains a key in userProfile tokenPermissions, but the userProfile token permission lacks a request value, return true', () => {
+//   })
+//
+//   it('When the requestScopeAndPermissions tokenPermissions contains a key in userProfile tokenPermissions, and the corresponding userProfile token permission request value matches, return false', () => {
+//   })
+//
+//   it('When the requestScopeAndPermissions tokenPermissions contains a key in userProfile tokenPermissions, and the corresponding userProfile token permission request value matches and contains additional scopes, return false', () => {
+//   })
+
+/*
+// for reference whilst writing tests:
 
 // return TRUE if
 //   (1) any key in requestScopeAndPermissions.tokenPermissions object is missing from userProfile.tokenPermissions object, OR
@@ -160,31 +173,36 @@ describe('Test tokenPermissionsPresent function', () => {
 //       key in userProfile.tokenPermissions
 // note for (2) we would need to map values "create,update,etc" => "create", "update", "etc" to get individual values
 function additionalScopeIsRequired(requestScopeAndPermissions: RequestScopeAndPermissions, userProfile: IUserProfile): boolean {
-  const userTokenPermissions = userProfile[UserProfileKeys.TokenPermissions];
 
-  if (!userTokenPermissions) {
-    return false; // should this not return true? if userTokenPermissions is undefined,
-                  // then we still need to add the requested permission key(s) & associated scopes?
+  const userProfileTokenPermissions = userProfile[UserProfileKeys.TokenPermissions];
+
+  // belt and braces
+  if ( !userProfileTokenPermissions ) {
+    return true;
   }
 
-  for (const key in requestScopeAndPermissions.tokenPermissions) {
-    if (!userTokenPermissions.hasOwnProperty(key)) { // e.g. { key1: 'value' }.hasOwnProperty('key1') will return true
+  // for each key that we've requested
+  for (const key in requestScopeAndPermissions.tokenPermissions ) {
+
+    if ( !userProfileTokenPermissions.hasOwnProperty(key)) { // e.g. { key1: 'value' }.hasOwnProperty('key1') will return true
       return true; // key is missing in userProfile, so since we request this permission we will need to add it?
     }
 
     const requestValue = requestScopeAndPermissions.tokenPermissions[key];
-    const userValue = userTokenPermissions[key];
+    const userProfileValue = userProfileTokenPermissions[key];
 
     // split, sort, and join the values to compare them irrespective of order
-    const requestArray = requestValue.split(',').map(item => item.trim()).sort();
-    const userArray = userValue.split(',').map(item => item.trim()).sort();
+    const normaliseFunction = ([array]: string) => array.split(',').map(item => item.trim())
+                                                   .sort((a, b) => a.localeCompare(b)).join(',');
 
-    if (requestArray.join(',') !== userArray.join(',')) {
+    const requestArray = normaliseFunction(requestValue);
+    const userProfileArray = normaliseFunction(userProfileValue);
+
+    if ( !requestArray.includes(userProfileArray) ) {
       return true; // values differ
     }
   }
 
   return false;
 }
-
 */
