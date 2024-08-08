@@ -24,6 +24,28 @@ export interface RequestScopeAndPermissions {
   tokenPermissions: IUserProfile[UserProfileKeys.TokenPermissions] // { [permission: string]: string }
 }
 
+
+export const acspProfileCreate = (options: AuthOptions): RequestHandler => (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+
+  const authMiddlewareConfig: AuthOptions = {
+    chsWebUrl: options.chsWebUrl,
+    returnUrl: options.returnUrl,
+    requestScopeAndPermissions: {
+      scope: 'https://identity.company-information.service.gov.uk/acsp-profile.create',
+      tokenPermissions: {
+        'acsp_profile': 'create'
+      }
+    }
+  };
+
+  return authMiddleware(authMiddlewareConfig)(req, res, next);
+}
+
+
 export const authMiddleware = (options: AuthOptions): RequestHandler => (
   req: Request,
   res: Response,
@@ -42,7 +64,7 @@ export const authMiddleware = (options: AuthOptions): RequestHandler => (
     redirectURI = redirectURI.concat(`&company_number=${options.companyNumber}`)
   }
 
-  if (!req.session) {
+  if ( ! req.session)  {
     if(options.requestScopeAndPermissions) {
       redirectURI = redirectURI.concat(`&additional_scope=${options.requestScopeAndPermissions.scope}`)
     }
@@ -56,14 +78,14 @@ export const authMiddleware = (options: AuthOptions): RequestHandler => (
   const userProfile: IUserProfile = signInInfo![SignInInfoKeys.UserProfile] || {}
   const userId: string | undefined = userProfile?.id
 
+  if (options.requestScopeAndPermissions && additionalScopeIsRequired(options.requestScopeAndPermissions, userProfile)) {
+    redirectURI = redirectURI.concat(`&additional_scope=${options.requestScopeAndPermissions.scope}`)
+    logger.info(`${appName} - handler: userId=${userId}, Not Authorised for ${options.requestScopeAndPermissions}... Updating URL to: ${redirectURI}`)
+  }
+
   if (!signedIn) {
     logger.info(`${appName} - handler: userId=${userId}, Not signed in... Redirecting to: ${redirectURI}`)
     return res.redirect(redirectURI)
-  }
-  else {
-    if(options.requestScopeAndPermissions && additionalScopeIsRequired(options.requestScopeAndPermissions, userProfile)) {
-      redirectURI = redirectURI.concat(`&additional_scope=${options.requestScopeAndPermissions.scope}`)
-    }
   }
 
   if (options.companyNumber && !isAuthorisedForCompany(options.companyNumber, signInInfo)) {
@@ -71,9 +93,15 @@ export const authMiddleware = (options: AuthOptions): RequestHandler => (
     return res.redirect(redirectURI)
   }
 
+  if (options.requestScopeAndPermissions && additionalScopeIsRequired(options.requestScopeAndPermissions, userProfile)) {
+    logger.info(`${appName} - handler: userId=${userId}, Not Authorised for ${options.requestScopeAndPermissions}... Redirecting to: ${redirectURI}`)
+    return res.redirect(redirectURI)
+  }
+
   logger.debug(`${appName} - handler: userId=${userId} authenticated successfully`)
   return next()
 }
+
 
 function isAuthorisedForCompany(companyNumber: string, signInInfo: ISignInInfo): boolean {
   const authorisedCompany = signInInfo[SignInInfoKeys.CompanyNumber]
@@ -126,8 +154,6 @@ export function additionalScopeIsRequired(requestScopeAndPermissions: RequestSco
         .sort()                         // Sort the array alphabetically
         .join(',');                     // Join the array back into a string
   };
-    // ([array]: string) => array.split(',').map(item => item.trim()).sort((a, b) => a.localeCompare(b)).join(',');
-
 
     const requestArray = normaliseCommaSeparatedString(requestValue);
     const userProfileArray = normaliseCommaSeparatedString(userProfileValue);

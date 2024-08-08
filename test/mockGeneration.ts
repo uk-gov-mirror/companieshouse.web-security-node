@@ -27,6 +27,13 @@ export function generateSignInInfoAuthedForCompany(mockUserId: string,
   return signInInfo
 }
 
+export function generateSignInInfoAuthedForScope(mockUserId: string,
+                                                 signedIn: number, additionScope: string): ISignInInfo {
+  const signInInfo: ISignInInfo = generateSignInInfo(mockUserId, signedIn)
+  signInInfo[SignInInfoKeys.AdditionalScope] =  additionScope
+  return signInInfo
+}
+
 export function generateRequest(requestSession?: Session, csrfTokenInHeader?: string, csrfTokenInBody?: string, method: 'GET' | 'POST' | "DELETE" = "GET"): Request {
   const headers = {
     ...(

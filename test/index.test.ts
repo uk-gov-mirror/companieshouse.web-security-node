@@ -6,11 +6,12 @@ import { assert, expect } from 'chai'
 import { Response } from 'express'
 import sinon from 'sinon'
 import { instance, mock, when } from 'ts-mockito'
-import { authMiddleware, AuthOptions, additionalScopeIsRequired } from '../src'
+import { authMiddleware, AuthOptions, additionalScopeIsRequired, acspProfileCreate } from '../src'
 import {
   generateRequest,
   generateResponse,
-  generateSignInInfo, generateSignInInfoAuthedForCompany
+  generateSignInInfo, generateSignInInfoAuthedForCompany,
+  generateSignInInfoAuthedForScope
 } from './mockGeneration'
 
 describe('Authentication Middleware', () => {
@@ -91,7 +92,7 @@ describe('Authentication Middleware with company number', () => {
     mockNext = sinon.stub()
   })
 
-  it('When the user is not authed for company the middleware should not call next and should trigger redirect', () => {
+  it('When the user is not authenticated for company the middleware should not call next and should trigger redirect', () => {
     const authedSession = mock(Session)
     const mockRequest = generateRequest(instance(authedSession))
 
@@ -114,7 +115,87 @@ describe('Authentication Middleware with company number', () => {
 })
 
 describe('Test tokenPermissions conditionals in authMiddleware', () => {
-  // todo
+
+  const mockReturnUrlWithScope = 'accounts/signin?return_to=origin&additional_scope=test_scope'
+  const mockUserId = 'sA=='
+
+  let redirectStub: sinon.SinonStub
+  let opts: AuthOptions
+  let mockResponse: Response
+  let mockNext: sinon.SinonStub
+
+  beforeEach(() => {
+    redirectStub = sinon.stub()
+    opts = {
+      returnUrl: 'origin',
+      chsWebUrl: 'accounts',
+      requestScopeAndPermissions: {
+        scope: "test_scope",
+        tokenPermissions: {
+          "test_permission": "create,update"
+        }
+      }
+    }
+    mockResponse = generateResponse()
+    mockResponse.redirect = redirectStub
+    mockNext = sinon.stub()
+  })
+  
+  it('When there is no session and requestScopeAndPermissions, the middleware should not call next and should trigger redirect with additional scope', () => {
+
+    const mockRequest = generateRequest()
+
+    authMiddleware(opts)(mockRequest, mockResponse, mockNext)
+    assert(redirectStub.calledOnceWith(mockReturnUrlWithScope))
+    assert(mockNext.notCalled)
+  })
+
+    
+  it('When the user is not logged in the middleware and requestScopeAndPermissions should not call next and should trigger redirect with additional scope', () => {
+    const unAuthedSession = mock(Session)
+    const mockRequest = generateRequest(instance(unAuthedSession))
+    const result = generateSignInInfoAuthedForScope(mockUserId, 0, "test_scope");
+    
+
+    when(unAuthedSession.get<ISignInInfo>(SessionKey.SignInInfo)).thenReturn(result)
+    authMiddleware(opts)(mockRequest, mockResponse, mockNext)
+    assert(redirectStub.calledOnceWith(mockReturnUrlWithScope))
+    assert(mockNext.notCalled)
+
+  })
+
+})
+
+describe('Test tokenPermissions conditionals in acspProfileCreate wrapper', () => {
+
+  const mockReturnUrlWithScope = 'accounts/signin?return_to=origin&additional_scope=https://identity.company-information.service.gov.uk/acsp-profile.create'
+
+  let redirectStub: sinon.SinonStub
+  let opts: AuthOptions
+  let mockResponse: Response
+  let mockNext: sinon.SinonStub
+
+  beforeEach(() => {
+    redirectStub = sinon.stub()
+    opts = {
+      returnUrl: 'origin',
+      chsWebUrl: 'accounts',
+    }
+    mockResponse = generateResponse()
+    mockResponse.redirect = redirectStub
+    mockNext = sinon.stub()
+  })
+  
+  it('When there is no session and acspProfileCreate, the middleware should not call next and should trigger redirect with additional scope', () => {
+
+    const mockRequest = generateRequest()
+
+    acspProfileCreate(opts)(mockRequest, mockResponse, mockNext)
+    assert(redirectStub.calledOnceWith(mockReturnUrlWithScope))
+    assert(mockNext.notCalled)
+  })
+
+
 })
 
 describe('Test tokenPermissionsPresent function', () => {

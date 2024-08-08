@@ -16,7 +16,7 @@
     "postpublish": "rm -rf lib"
   },
   "dependencies": {
-    "@companieshouse/node-session-handler": "~5.1.1",
+    "@companieshouse/node-session-handler": "~5.1.2",
     "@companieshouse/structured-logging-node": "~2.0.1",
     "express-async-handler": "^1.2.0",
     "uuid": "^9.0.1"
