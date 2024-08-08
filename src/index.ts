@@ -118,11 +118,19 @@ export function additionalScopeIsRequired(requestScopeAndPermissions: RequestSco
     const userProfileValue = userProfileTokenPermissions[key];
 
     // split, sort, and join the values to compare them irrespective of order
-    const normaliseFunction = ([array]: string) => array.split(',').map(item => item.trim())
-      .sort((a, b) => a.localeCompare(b)).join(',');
+    const normaliseCommaSeparatedString = (value: string): string => {
+      return value
+        .split(',')                     // Split the string by commas
+        .map(item => item.trim())       // Trim whitespace from each item
+        .filter(item => item !== '')    // Remove any empty strings
+        .sort()                         // Sort the array alphabetically
+        .join(',');                     // Join the array back into a string
+  };
+    // ([array]: string) => array.split(',').map(item => item.trim()).sort((a, b) => a.localeCompare(b)).join(',');
 
-    const requestArray = normaliseFunction(requestValue);
-    const userProfileArray = normaliseFunction(userProfileValue);
+
+    const requestArray = normaliseCommaSeparatedString(requestValue);
+    const userProfileArray = normaliseCommaSeparatedString(userProfileValue);
 
     if ( ! userProfileArray.includes(requestArray)) {
       return true; // user profile does not have all the permissions for the requested key
