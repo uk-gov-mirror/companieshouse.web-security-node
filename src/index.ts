@@ -25,7 +25,7 @@ export interface RequestScopeAndPermissions {
 }
 
 
-export const acspProfileCreate = (options: AuthOptions): RequestHandler => (
+export const acspProfileCreateAuthMiddleware = (options: AuthOptions): RequestHandler => (
   req: Request,
   res: Response,
   next: NextFunction

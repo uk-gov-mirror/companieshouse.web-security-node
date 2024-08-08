@@ -6,7 +6,7 @@ import { assert, expect } from 'chai'
 import { Response } from 'express'
 import sinon from 'sinon'
 import { instance, mock, when } from 'ts-mockito'
-import { authMiddleware, AuthOptions, additionalScopeIsRequired, acspProfileCreate } from '../src'
+import { authMiddleware, AuthOptions, additionalScopeIsRequired, acspProfileCreateAuthMiddleware } from '../src'
 import {
   generateRequest,
   generateResponse,
@@ -166,7 +166,7 @@ describe('Test tokenPermissions conditionals in authMiddleware', () => {
 
 })
 
-describe('Test tokenPermissions conditionals in acspProfileCreate wrapper', () => {
+describe('Test tokenPermissions conditionals in acspProfileCreateAuthMiddleware wrapper', () => {
 
   const mockReturnUrlWithScope = 'accounts/signin?return_to=origin&additional_scope=https://identity.company-information.service.gov.uk/acsp-profile.create'
 
@@ -190,7 +190,7 @@ describe('Test tokenPermissions conditionals in acspProfileCreate wrapper', () =
 
     const mockRequest = generateRequest()
 
-    acspProfileCreate(opts)(mockRequest, mockResponse, mockNext)
+    acspProfileCreateAuthMiddleware(opts)(mockRequest, mockResponse, mockNext)
     assert(redirectStub.calledOnceWith(mockReturnUrlWithScope))
     assert(mockNext.notCalled)
   })
