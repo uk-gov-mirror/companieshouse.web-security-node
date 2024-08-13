@@ -9,8 +9,7 @@ import { additionalScopeIsRequired } from './utils/additionalScopeIsRequired'
 
 export * from './csrf-protection'
 export * from './scopes-permissions'
-
-
+export * from './utils'
 
 const APP_NAME = 'web-security-node'
 const logger = createLogger(APP_NAME)
