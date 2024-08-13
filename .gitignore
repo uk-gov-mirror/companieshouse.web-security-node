@@ -1,6 +1,6 @@
 node_modules
 coverage
-nyc
+.nyc_output
 #dist
 
 .idea/
