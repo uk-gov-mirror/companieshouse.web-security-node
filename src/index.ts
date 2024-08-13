@@ -8,6 +8,8 @@ import {NextFunction, Request, RequestHandler, Response} from 'express'
 import { additionalScopeIsRequired } from './utils/additionalScopeIsRequired'
 
 export * from './csrf-protection'
+export * from './scopes-permissions'
+
 
 
 const APP_NAME = 'web-security-node'

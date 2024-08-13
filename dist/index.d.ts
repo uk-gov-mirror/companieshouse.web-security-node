@@ -3,6 +3,7 @@ import { IUserProfile } from '@companieshouse/node-session-handler/lib/session/m
 import { UserProfileKeys } from '@companieshouse/node-session-handler/lib/session/keys/UserProfileKeys';
 import { RequestHandler } from 'express';
 export * from './csrf-protection';
+export * from './scopes-permissions';
 export interface AuthOptions {
     returnUrl: string;
     chsWebUrl: string;

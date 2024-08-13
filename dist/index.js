@@ -21,6 +21,7 @@ const SignInInfoKeys_1 = require("@companieshouse/node-session-handler/lib/sessi
 const structured_logging_node_1 = require("@companieshouse/structured-logging-node");
 const additionalScopeIsRequired_1 = require("./utils/additionalScopeIsRequired");
 __exportStar(require("./csrf-protection"), exports);
+__exportStar(require("./scopes-permissions"), exports);
 const APP_NAME = 'web-security-node';
 const logger = (0, structured_logging_node_1.createLogger)(APP_NAME);
 const authMiddleware = (options) => (req, res, next) => {

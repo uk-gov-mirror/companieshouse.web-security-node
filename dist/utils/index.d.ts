@@ -1,0 +1,1 @@
+export { additionalScopeIsRequired } from './additionalScopeIsRequired';
