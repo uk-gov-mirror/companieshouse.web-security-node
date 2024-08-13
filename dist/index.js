@@ -14,29 +14,15 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.additionalScopeIsRequired = exports.authMiddleware = exports.acspProfileCreateAuthMiddleware = void 0;
+exports.authMiddleware = void 0;
 require("@companieshouse/node-session-handler");
 const SessionKey_1 = require("@companieshouse/node-session-handler/lib/session/keys/SessionKey");
 const SignInInfoKeys_1 = require("@companieshouse/node-session-handler/lib/session/keys/SignInInfoKeys");
-const UserProfileKeys_1 = require("@companieshouse/node-session-handler/lib/session/keys/UserProfileKeys");
 const structured_logging_node_1 = require("@companieshouse/structured-logging-node");
+const additionalScopeIsRequired_1 = require("./utils/additionalScopeIsRequired");
 __exportStar(require("./csrf-protection"), exports);
 const APP_NAME = 'web-security-node';
 const logger = (0, structured_logging_node_1.createLogger)(APP_NAME);
-const acspProfileCreateAuthMiddleware = (options) => (req, res, next) => {
-    const authMiddlewareConfig = {
-        chsWebUrl: options.chsWebUrl,
-        returnUrl: options.returnUrl,
-        requestScopeAndPermissions: {
-            scope: 'https://identity.company-information.service.gov.uk/acsp-profile.create',
-            tokenPermissions: {
-                'acsp_profile': 'create'
-            }
-        }
-    };
-    return (0, exports.authMiddleware)(authMiddlewareConfig)(req, res, next);
-};
-exports.acspProfileCreateAuthMiddleware = acspProfileCreateAuthMiddleware;
 const authMiddleware = (options) => (req, res, next) => {
     const appName = 'CH Web Security Node';
     if (!options.chsWebUrl) {
@@ -58,7 +44,7 @@ const authMiddleware = (options) => (req, res, next) => {
     const signedIn = signInInfo[SignInInfoKeys_1.SignInInfoKeys.SignedIn] === 1;
     const userProfile = signInInfo[SignInInfoKeys_1.SignInInfoKeys.UserProfile] || {};
     const userId = userProfile === null || userProfile === void 0 ? void 0 : userProfile.id;
-    if (options.requestScopeAndPermissions && additionalScopeIsRequired(options.requestScopeAndPermissions, userProfile)) {
+    if (options.requestScopeAndPermissions && (0, additionalScopeIsRequired_1.additionalScopeIsRequired)(options.requestScopeAndPermissions, userProfile)) {
         redirectURI = redirectURI.concat(`&additional_scope=${options.requestScopeAndPermissions.scope}`);
         logger.info(`${appName} - handler: userId=${userId}, Not Authorised for ${options.requestScopeAndPermissions}... Updating URL to: ${redirectURI}`);
     }
@@ -70,7 +56,7 @@ const authMiddleware = (options) => (req, res, next) => {
         logger.info(`${appName} - handler: userId=${userId}, Not Authorised for ${options.companyNumber}... Redirecting to: ${redirectURI}`);
         return res.redirect(redirectURI);
     }
-    if (options.requestScopeAndPermissions && additionalScopeIsRequired(options.requestScopeAndPermissions, userProfile)) {
+    if (options.requestScopeAndPermissions && (0, additionalScopeIsRequired_1.additionalScopeIsRequired)(options.requestScopeAndPermissions, userProfile)) {
         logger.info(`${appName} - handler: userId=${userId}, Not Authorised for ${options.requestScopeAndPermissions}... Redirecting to: ${redirectURI}`);
         return res.redirect(redirectURI);
     }
@@ -85,37 +71,3 @@ function isAuthorisedForCompany(companyNumber, signInInfo) {
     }
     return authorisedCompany.localeCompare(companyNumber) === 0;
 }
-function additionalScopeIsRequired(requestScopeAndPermissions, userProfile) {
-    if (!requestScopeAndPermissions) {
-        return false;
-    }
-    if (!userProfile.hasOwnProperty(UserProfileKeys_1.UserProfileKeys.TokenPermissions)) {
-        return true;
-    }
-    const userProfileTokenPermissions = userProfile[UserProfileKeys_1.UserProfileKeys.TokenPermissions];
-    if (!userProfileTokenPermissions) {
-        return true;
-    }
-    for (const key in requestScopeAndPermissions.tokenPermissions) {
-        if (!userProfileTokenPermissions.hasOwnProperty(key)) {
-            return true;
-        }
-        const requestValue = requestScopeAndPermissions.tokenPermissions[key];
-        const userProfileValue = userProfileTokenPermissions[key];
-        const normaliseCommaSeparatedString = (value) => {
-            return value
-                .split(',')
-                .map(item => item.trim())
-                .filter(item => item !== '')
-                .sort()
-                .join(',');
-        };
-        const requestArray = normaliseCommaSeparatedString(requestValue);
-        const userProfileArray = normaliseCommaSeparatedString(userProfileValue);
-        if (!userProfileArray.includes(requestArray)) {
-            return true;
-        }
-    }
-    return false;
-}
-exports.additionalScopeIsRequired = additionalScopeIsRequired;

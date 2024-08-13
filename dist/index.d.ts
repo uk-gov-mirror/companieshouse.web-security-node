@@ -13,6 +13,4 @@ export interface RequestScopeAndPermissions {
     scope: string;
     tokenPermissions: IUserProfile[UserProfileKeys.TokenPermissions];
 }
-export declare const acspProfileCreateAuthMiddleware: (options: AuthOptions) => RequestHandler;
 export declare const authMiddleware: (options: AuthOptions) => RequestHandler;
-export declare function additionalScopeIsRequired(requestScopeAndPermissions: RequestScopeAndPermissions | undefined | null, userProfile: IUserProfile): boolean;
