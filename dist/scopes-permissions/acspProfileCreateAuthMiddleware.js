@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.acspProfileCreateAuthMiddleware = void 0;
-const __1 = require("../");
+const authMiddlewarePrivate_1 = require("../auth/authMiddlewarePrivate");
 const acspProfileCreateAuthMiddleware = (options) => (req, res, next) => {
     const authMiddlewareConfig = {
         chsWebUrl: options.chsWebUrl,
@@ -13,6 +13,6 @@ const acspProfileCreateAuthMiddleware = (options) => (req, res, next) => {
             }
         }
     };
-    return (0, __1.authMiddleware)(authMiddlewareConfig)(req, res, next);
+    return (0, authMiddlewarePrivate_1.authMiddlewarePrivate)(authMiddlewareConfig)(req, res, next);
 };
 exports.acspProfileCreateAuthMiddleware = acspProfileCreateAuthMiddleware;

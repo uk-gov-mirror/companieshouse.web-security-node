@@ -1,4 +1,5 @@
-import {AuthOptions, authMiddleware} from '../'
+import {AuthOptions} from '../'
+import {authMiddlewarePrivate} from '../auth/authMiddlewarePrivate'
 import {NextFunction, Request, RequestHandler, Response} from 'express'
 
 export const acspProfileCreateAuthMiddleware = (options: AuthOptions): RequestHandler => (
@@ -18,5 +19,5 @@ export const acspProfileCreateAuthMiddleware = (options: AuthOptions): RequestHa
     }
   };
 
-  return authMiddleware(authMiddlewareConfig)(req, res, next);
+  return authMiddlewarePrivate(authMiddlewareConfig)(req, res, next);
 }

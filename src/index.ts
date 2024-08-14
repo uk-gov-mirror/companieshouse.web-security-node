@@ -1,18 +1,13 @@
 import '@companieshouse/node-session-handler'
-import {SessionKey} from '@companieshouse/node-session-handler/lib/session/keys/SessionKey'
-import {SignInInfoKeys} from '@companieshouse/node-session-handler/lib/session/keys/SignInInfoKeys'
-import {ISignInInfo, IUserProfile} from '@companieshouse/node-session-handler/lib/session/model/SessionInterfaces'
+import {IUserProfile} from '@companieshouse/node-session-handler/lib/session/model/SessionInterfaces'
 import {UserProfileKeys} from '@companieshouse/node-session-handler/lib/session/keys/UserProfileKeys'
-import {createLogger} from '@companieshouse/structured-logging-node'
 import {NextFunction, Request, RequestHandler, Response} from 'express'
-import { additionalScopeIsRequired } from './utils'
+import {authMiddlewarePrivate} from './auth/authMiddlewarePrivate'
 
 export * from './csrf-protection'
 export * from './scopes-permissions'
 export * from './utils'
 
-const APP_NAME = 'web-security-node'
-const logger = createLogger(APP_NAME)
 
 export interface AuthOptions {
   returnUrl: string
@@ -26,7 +21,7 @@ export interface RequestScopeAndPermissions {
   tokenPermissions: IUserProfile[UserProfileKeys.TokenPermissions] // { [permission: string]: string }
 }
 
-
+/*
 export const authMiddleware = (options: AuthOptions): RequestHandler => (
   req: Request,
   res: Response,
@@ -82,8 +77,17 @@ export const authMiddleware = (options: AuthOptions): RequestHandler => (
   logger.debug(`${appName} - handler: userId=${userId} authenticated successfully`)
   return next()
 }
+  */
 
+export const authMiddleware = (options: AuthOptions): RequestHandler => (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
 
+  return authMiddlewarePrivate(options)(req, res, next);
+}
+/*
 function isAuthorisedForCompany(companyNumber: string, signInInfo: ISignInInfo): boolean {
   const authorisedCompany = signInInfo[SignInInfoKeys.CompanyNumber]
   if (!authorisedCompany) {
@@ -92,3 +96,4 @@ function isAuthorisedForCompany(companyNumber: string, signInInfo: ISignInInfo):
 
   return authorisedCompany.localeCompare(companyNumber) === 0
 }
+  */
