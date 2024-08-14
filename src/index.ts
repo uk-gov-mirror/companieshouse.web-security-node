@@ -13,8 +13,15 @@ export interface AuthOptions {
   returnUrl: string
   chsWebUrl: string
   companyNumber?: string
-  requestScopeAndPermissions?: RequestScopeAndPermissions
+  requestScopeAndPermissions?: RequestScopeAndPermissions // should only be used within the library
 }
+
+/*
+export interface AuthOptions {
+  returnUrl: string
+  chsWebUrl: string
+  companyNumber?: string
+}*/
 
 export interface RequestScopeAndPermissions {
   scope: string

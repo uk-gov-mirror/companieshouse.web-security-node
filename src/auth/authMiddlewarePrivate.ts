@@ -11,6 +11,10 @@ import {AuthOptions} from '..'
 const APP_NAME = 'web-security-node'
 const logger = createLogger(APP_NAME)
 
+
+// export const authMiddlewarePrivate = (options: AuthOptions, requestScopeAndPermissions?: RequestScopeAndPermissions): RequestHandler => (
+
+
 export const authMiddlewarePrivate = (options: AuthOptions): RequestHandler => (
     req: Request,
     res: Response,

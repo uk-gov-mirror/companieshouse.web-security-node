@@ -20,4 +20,7 @@ export const acspProfileCreateAuthMiddleware = (options: AuthOptions): RequestHa
   };
 
   return authMiddlewarePrivate(authMiddlewareConfig)(req, res, next);
+
+  // return authMiddlewarePrivate(authMiddlewareConfig, requestScopeAndPermissions)(req, res, next);
+
 }
