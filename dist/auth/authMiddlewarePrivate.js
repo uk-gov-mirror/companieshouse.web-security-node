@@ -10,6 +10,7 @@ const APP_NAME = 'web-security-node';
 const logger = (0, structured_logging_node_1.createLogger)(APP_NAME);
 const authMiddlewarePrivate = (options) => (req, res, next) => {
     const appName = 'CH Web Security Node';
+    logger.debug(`${appName} - handler: in private function`);
     if (!options.chsWebUrl) {
         logger.error(`${appName} - handler: Required Field CHS Web URL not set`);
         throw new Error('Required Field CHS Web URL not set');
