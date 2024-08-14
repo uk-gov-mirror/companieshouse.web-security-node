@@ -17,6 +17,8 @@ export const authMiddlewarePrivate = (options: AuthOptions): RequestHandler => (
     next: NextFunction
   ) => {
     const appName = 'CH Web Security Node'
+
+    logger.debug(`${appName} - handler: in private function`)
   
     if (!options.chsWebUrl) {
       logger.error(`${appName} - handler: Required Field CHS Web URL not set`)
