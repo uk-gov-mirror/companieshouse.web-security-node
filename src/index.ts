@@ -5,7 +5,7 @@ import {ISignInInfo, IUserProfile} from '@companieshouse/node-session-handler/li
 import {UserProfileKeys} from '@companieshouse/node-session-handler/lib/session/keys/UserProfileKeys'
 import {createLogger} from '@companieshouse/structured-logging-node'
 import {NextFunction, Request, RequestHandler, Response} from 'express'
-import { additionalScopeIsRequired } from './utils/additionalScopeIsRequired'
+import { additionalScopeIsRequired } from './utils'
 
 export * from './csrf-protection'
 export * from './scopes-permissions'

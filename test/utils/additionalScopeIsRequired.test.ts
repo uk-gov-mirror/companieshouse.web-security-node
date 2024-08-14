@@ -2,7 +2,7 @@ import { IUserProfile } from '@companieshouse/node-session-handler/lib/session/m
 import { UserProfileKeys } from '@companieshouse/node-session-handler/lib/session/keys/UserProfileKeys'
 import { assert, expect } from 'chai'
 import { AuthOptions } from '../../src'
-import { additionalScopeIsRequired } from '../../src/utils/additionalScopeIsRequired'
+import { additionalScopeIsRequired } from '../../src/utils'
 
 describe('Test tokenPermissionsPresent function', () => {
   let options: AuthOptions

@@ -2,7 +2,7 @@ import { assert } from 'chai'
 import { Response } from 'express'
 import sinon from 'sinon'
 import { AuthOptions } from '../../src'
-import { acspProfileCreateAuthMiddleware } from '../../src/scopes-permissions/acspProfileCreateAuthMiddleware'
+import { acspProfileCreateAuthMiddleware } from '../../src/scopes-permissions'
 import {
   generateRequest,
   generateResponse
