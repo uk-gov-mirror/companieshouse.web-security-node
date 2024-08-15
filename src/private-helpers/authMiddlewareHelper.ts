@@ -2,15 +2,11 @@ import '@companieshouse/node-session-handler'
 import {SessionKey} from '@companieshouse/node-session-handler/lib/session/keys/SessionKey'
 import {SignInInfoKeys} from '@companieshouse/node-session-handler/lib/session/keys/SignInInfoKeys'
 import {ISignInInfo, IUserProfile} from '@companieshouse/node-session-handler/lib/session/model/SessionInterfaces'
-import {createLogger} from '@companieshouse/structured-logging-node'
 import {NextFunction, Request, RequestHandler, Response} from 'express'
 import {AuthOptions} from '..'
 import {additionalScopeIsRequired}  from './additionalScopeIsRequired'
-import { RequestScopeAndPermissions } from './RequestScopeAndPermissions'
-
-
-const APP_NAME = 'web-security-node'
-const logger = createLogger(APP_NAME)
+import {logger} from './createLogger'
+import {RequestScopeAndPermissions} from './RequestScopeAndPermissions'
 
 
 export const authMiddlewareHelper = (options: AuthOptions, requestScopeAndPermissions?: RequestScopeAndPermissions): RequestHandler => (
@@ -20,7 +16,7 @@ export const authMiddlewareHelper = (options: AuthOptions, requestScopeAndPermis
   ) => {
     const appName = 'CH Web Security Node'
 
-    logger.debug(`${appName} - handler: in private function`)
+    logger.debug(`${appName} - handler: in auth helper function`)
   
     if (!options.chsWebUrl) {
       logger.error(`${appName} - handler: Required Field CHS Web URL not set`)

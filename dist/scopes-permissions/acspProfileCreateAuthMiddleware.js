@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.acspProfileCreateAuthMiddleware = void 0;
 const authMiddlewareHelper_1 = require("../private-helpers/authMiddlewareHelper");
+const createLogger_1 = require("app/private-helpers/createLogger");
 const acspProfileCreateAuthMiddleware = (options) => (req, res, next) => {
     const authMiddlewareConfig = {
         chsWebUrl: options.chsWebUrl,
@@ -13,6 +14,7 @@ const acspProfileCreateAuthMiddleware = (options) => (req, res, next) => {
             'acsp_profile': 'create'
         }
     };
+    createLogger_1.logger.debug("Auth acspProfileCreate");
     return (0, authMiddlewareHelper_1.authMiddlewareHelper)(authMiddlewareConfig, acspProfileCreateRequestScopeAndPermissions)(req, res, next);
 };
 exports.acspProfileCreateAuthMiddleware = acspProfileCreateAuthMiddleware;

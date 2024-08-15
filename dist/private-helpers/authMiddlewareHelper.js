@@ -4,15 +4,13 @@ exports.authMiddlewareHelper = void 0;
 require("@companieshouse/node-session-handler");
 const SessionKey_1 = require("@companieshouse/node-session-handler/lib/session/keys/SessionKey");
 const SignInInfoKeys_1 = require("@companieshouse/node-session-handler/lib/session/keys/SignInInfoKeys");
-const structured_logging_node_1 = require("@companieshouse/structured-logging-node");
 const additionalScopeIsRequired_1 = require("./additionalScopeIsRequired");
-const APP_NAME = 'web-security-node';
-const logger = (0, structured_logging_node_1.createLogger)(APP_NAME);
+const createLogger_1 = require("./createLogger");
 const authMiddlewareHelper = (options, requestScopeAndPermissions) => (req, res, next) => {
     const appName = 'CH Web Security Node';
-    logger.debug(`${appName} - handler: in private function`);
+    createLogger_1.logger.debug(`${appName} - handler: in auth helper function`);
     if (!options.chsWebUrl) {
-        logger.error(`${appName} - handler: Required Field CHS Web URL not set`);
+        createLogger_1.logger.error(`${appName} - handler: Required Field CHS Web URL not set`);
         throw new Error('Required Field CHS Web URL not set');
     }
     let redirectURI = `${options.chsWebUrl}/signin?return_to=${options.returnUrl}`;
@@ -23,7 +21,7 @@ const authMiddlewareHelper = (options, requestScopeAndPermissions) => (req, res,
         if (requestScopeAndPermissions) {
             redirectURI = redirectURI.concat(`&additional_scope=${requestScopeAndPermissions.scope}`);
         }
-        logger.debug(`${appName} - handler: Session object is missing!`);
+        createLogger_1.logger.debug(`${appName} - handler: Session object is missing!`);
         return res.redirect(redirectURI);
     }
     const signInInfo = req.session.get(SessionKey_1.SessionKey.SignInInfo) || {};
@@ -32,21 +30,21 @@ const authMiddlewareHelper = (options, requestScopeAndPermissions) => (req, res,
     const userId = userProfile === null || userProfile === void 0 ? void 0 : userProfile.id;
     if (requestScopeAndPermissions && (0, additionalScopeIsRequired_1.additionalScopeIsRequired)(requestScopeAndPermissions, userProfile)) {
         redirectURI = redirectURI.concat(`&additional_scope=${requestScopeAndPermissions.scope}`);
-        logger.info(`${appName} - handler: userId=${userId}, Not Authorised for ${requestScopeAndPermissions}... Updating URL to: ${redirectURI}`);
+        createLogger_1.logger.info(`${appName} - handler: userId=${userId}, Not Authorised for ${requestScopeAndPermissions}... Updating URL to: ${redirectURI}`);
     }
     if (!signedIn) {
-        logger.info(`${appName} - handler: userId=${userId}, Not signed in... Redirecting to: ${redirectURI}`);
+        createLogger_1.logger.info(`${appName} - handler: userId=${userId}, Not signed in... Redirecting to: ${redirectURI}`);
         return res.redirect(redirectURI);
     }
     if (options.companyNumber && !isAuthorisedForCompany(options.companyNumber, signInInfo)) {
-        logger.info(`${appName} - handler: userId=${userId}, Not Authorised for ${options.companyNumber}... Redirecting to: ${redirectURI}`);
+        createLogger_1.logger.info(`${appName} - handler: userId=${userId}, Not Authorised for ${options.companyNumber}... Redirecting to: ${redirectURI}`);
         return res.redirect(redirectURI);
     }
     if (requestScopeAndPermissions && (0, additionalScopeIsRequired_1.additionalScopeIsRequired)(requestScopeAndPermissions, userProfile)) {
-        logger.info(`${appName} - handler: userId=${userId}, Not Authorised for ${requestScopeAndPermissions}... Redirecting to: ${redirectURI}`);
+        createLogger_1.logger.info(`${appName} - handler: userId=${userId}, Not Authorised for ${requestScopeAndPermissions}... Redirecting to: ${redirectURI}`);
         return res.redirect(redirectURI);
     }
-    logger.debug(`${appName} - handler: userId=${userId} authenticated successfully`);
+    createLogger_1.logger.debug(`${appName} - handler: userId=${userId} authenticated successfully`);
     return next();
 };
 exports.authMiddlewareHelper = authMiddlewareHelper;

@@ -1,7 +1,9 @@
+import {NextFunction, Request, RequestHandler, Response} from 'express'
 import {AuthOptions} from '../'
 import {authMiddlewareHelper} from '../private-helpers/authMiddlewareHelper'
+import { logger } from 'app/private-helpers/createLogger';
 import { RequestScopeAndPermissions } from 'app/private-helpers/RequestScopeAndPermissions';
-import {NextFunction, Request, RequestHandler, Response} from 'express'
+
 
 export const acspProfileCreateAuthMiddleware = (options: AuthOptions): RequestHandler => (
   req: Request,
@@ -20,6 +22,8 @@ export const acspProfileCreateAuthMiddleware = (options: AuthOptions): RequestHa
       'acsp_profile': 'create'
     }
   }
+
+  logger.debug("Auth acspProfileCreate")
 
   return authMiddlewareHelper(authMiddlewareConfig, acspProfileCreateRequestScopeAndPermissions)(req, res, next);
 
