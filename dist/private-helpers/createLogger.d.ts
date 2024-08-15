@@ -1,1 +1,2 @@
-export declare const logger: import("@companieshouse/structured-logging-node/lib/ApplicationLogger");
+import ApplicationLogger from "@companieshouse/structured-logging-node/lib/ApplicationLogger";
+export declare const logger: ApplicationLogger;
