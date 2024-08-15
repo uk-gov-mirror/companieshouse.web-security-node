@@ -1,19 +1,23 @@
 import '@companieshouse/node-session-handler'
-import {IUserProfile} from '@companieshouse/node-session-handler/lib/session/model/SessionInterfaces'
-import {UserProfileKeys} from '@companieshouse/node-session-handler/lib/session/keys/UserProfileKeys'
 import {NextFunction, Request, RequestHandler, Response} from 'express'
-import {authMiddlewarePrivate} from './auth/authMiddlewarePrivate'
+import {authMiddlewareHelper} from './private-helpers/authMiddlewareHelper'
 
 export * from './csrf-protection'
 export * from './scopes-permissions'
-export * from './utils'
-
 
 export interface AuthOptions {
   returnUrl: string
   chsWebUrl: string
   companyNumber?: string
-  requestScopeAndPermissions?: RequestScopeAndPermissions // should only be used within the library
+}
+
+export const authMiddleware = (options: AuthOptions): RequestHandler => (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+
+  return authMiddlewareHelper(options)(req, res, next);
 }
 
 /*
@@ -23,10 +27,6 @@ export interface AuthOptions {
   companyNumber?: string
 }*/
 
-export interface RequestScopeAndPermissions {
-  scope: string
-  tokenPermissions: IUserProfile[UserProfileKeys.TokenPermissions] // { [permission: string]: string }
-}
 
 /*
 export const authMiddleware = (options: AuthOptions): RequestHandler => (
@@ -86,14 +86,6 @@ export const authMiddleware = (options: AuthOptions): RequestHandler => (
 }
   */
 
-export const authMiddleware = (options: AuthOptions): RequestHandler => (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-
-  return authMiddlewarePrivate(options)(req, res, next);
-}
 /*
 function isAuthorisedForCompany(companyNumber: string, signInInfo: ISignInInfo): boolean {
   const authorisedCompany = signInInfo[SignInInfoKeys.CompanyNumber]

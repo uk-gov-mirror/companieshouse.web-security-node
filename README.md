@@ -1,5 +1,10 @@
 # web-security-node
+
 Security for web applications in node
+
+## Authorisation
+
+If your application uses 
 
 ## Cross Site Request Forgery (CSRF) protection
 

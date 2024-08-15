@@ -16,11 +16,10 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.authMiddleware = void 0;
 require("@companieshouse/node-session-handler");
-const authMiddlewarePrivate_1 = require("./auth/authMiddlewarePrivate");
+const authMiddlewareHelper_1 = require("./private-helpers/authMiddlewareHelper");
 __exportStar(require("./csrf-protection"), exports);
 __exportStar(require("./scopes-permissions"), exports);
-__exportStar(require("./utils"), exports);
 const authMiddleware = (options) => (req, res, next) => {
-    return (0, authMiddlewarePrivate_1.authMiddlewarePrivate)(options)(req, res, next);
+    return (0, authMiddlewareHelper_1.authMiddlewareHelper)(options)(req, res, next);
 };
 exports.authMiddleware = authMiddleware;

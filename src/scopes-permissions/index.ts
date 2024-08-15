@@ -1,4 +1,3 @@
 export {
-    acspProfileCreateAuthMiddleware
+    acspProfileCreateAuthMiddleware,
 } from './acspProfileCreateAuthMiddleware'
-

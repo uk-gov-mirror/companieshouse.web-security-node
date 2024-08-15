@@ -1,6 +1,6 @@
 import { IUserProfile } from '@companieshouse/node-session-handler/lib/session/model/SessionInterfaces'
 import { UserProfileKeys } from '@companieshouse/node-session-handler/lib/session/keys/UserProfileKeys'
-import { RequestScopeAndPermissions } from '../'
+import { RequestScopeAndPermissions } from './RequestScopeAndPermissions'
 
 // return TRUE if
 //   (1) any key in requestScopeAndPermissions.tokenPermissions object is missing from userProfile.tokenPermissions object, OR

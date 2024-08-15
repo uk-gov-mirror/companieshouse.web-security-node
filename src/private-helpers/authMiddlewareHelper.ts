@@ -4,18 +4,16 @@ import {SignInInfoKeys} from '@companieshouse/node-session-handler/lib/session/k
 import {ISignInInfo, IUserProfile} from '@companieshouse/node-session-handler/lib/session/model/SessionInterfaces'
 import {createLogger} from '@companieshouse/structured-logging-node'
 import {NextFunction, Request, RequestHandler, Response} from 'express'
-import {additionalScopeIsRequired}  from '../utils'
 import {AuthOptions} from '..'
+import {additionalScopeIsRequired}  from './additionalScopeIsRequired'
+import { RequestScopeAndPermissions } from './RequestScopeAndPermissions'
 
 
 const APP_NAME = 'web-security-node'
 const logger = createLogger(APP_NAME)
 
 
-// export const authMiddlewarePrivate = (options: AuthOptions, requestScopeAndPermissions?: RequestScopeAndPermissions): RequestHandler => (
-
-
-export const authMiddlewarePrivate = (options: AuthOptions): RequestHandler => (
+export const authMiddlewareHelper = (options: AuthOptions, requestScopeAndPermissions?: RequestScopeAndPermissions): RequestHandler => (
     req: Request,
     res: Response,
     next: NextFunction
@@ -36,8 +34,8 @@ export const authMiddlewarePrivate = (options: AuthOptions): RequestHandler => (
     }
   
     if ( ! req.session)  {
-      if(options.requestScopeAndPermissions) {
-        redirectURI = redirectURI.concat(`&additional_scope=${options.requestScopeAndPermissions.scope}`)
+      if(requestScopeAndPermissions) {
+        redirectURI = redirectURI.concat(`&additional_scope=${requestScopeAndPermissions.scope}`)
       }
   
       logger.debug(`${appName} - handler: Session object is missing!`)
@@ -49,9 +47,9 @@ export const authMiddlewarePrivate = (options: AuthOptions): RequestHandler => (
     const userProfile: IUserProfile = signInInfo![SignInInfoKeys.UserProfile] || {}
     const userId: string | undefined = userProfile?.id
   
-    if (options.requestScopeAndPermissions && additionalScopeIsRequired(options.requestScopeAndPermissions, userProfile)) {
-      redirectURI = redirectURI.concat(`&additional_scope=${options.requestScopeAndPermissions.scope}`)
-      logger.info(`${appName} - handler: userId=${userId}, Not Authorised for ${options.requestScopeAndPermissions}... Updating URL to: ${redirectURI}`)
+    if (requestScopeAndPermissions && additionalScopeIsRequired(requestScopeAndPermissions, userProfile)) {
+      redirectURI = redirectURI.concat(`&additional_scope=${requestScopeAndPermissions.scope}`)
+      logger.info(`${appName} - handler: userId=${userId}, Not Authorised for ${requestScopeAndPermissions}... Updating URL to: ${redirectURI}`)
     }
   
     if (!signedIn) {
@@ -64,8 +62,8 @@ export const authMiddlewarePrivate = (options: AuthOptions): RequestHandler => (
       return res.redirect(redirectURI)
     }
   
-    if (options.requestScopeAndPermissions && additionalScopeIsRequired(options.requestScopeAndPermissions, userProfile)) {
-      logger.info(`${appName} - handler: userId=${userId}, Not Authorised for ${options.requestScopeAndPermissions}... Redirecting to: ${redirectURI}`)
+    if (requestScopeAndPermissions && additionalScopeIsRequired(requestScopeAndPermissions, userProfile)) {
+      logger.info(`${appName} - handler: userId=${userId}, Not Authorised for ${requestScopeAndPermissions}... Redirecting to: ${redirectURI}`)
       return res.redirect(redirectURI)
     }
   

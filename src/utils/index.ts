@@ -1,4 +1,0 @@
-export {
-    additionalScopeIsRequired
-} from './additionalScopeIsRequired'
-

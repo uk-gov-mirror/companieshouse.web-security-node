@@ -1,24 +1,19 @@
 import { IUserProfile } from '@companieshouse/node-session-handler/lib/session/model/SessionInterfaces'
 import { UserProfileKeys } from '@companieshouse/node-session-handler/lib/session/keys/UserProfileKeys'
 import { assert, expect } from 'chai'
-import { AuthOptions } from '../../src'
-import { additionalScopeIsRequired } from '../../src/utils'
+import { additionalScopeIsRequired } from '../../src/private-helpers/additionalScopeIsRequired'
+import { RequestScopeAndPermissions } from '../../src/private-helpers/RequestScopeAndPermissions'
 
 describe('Test tokenPermissionsPresent function', () => {
-  let options: AuthOptions
+  let testRequestScopeAndPermissions: RequestScopeAndPermissions
   let userProfile: IUserProfile
 
   beforeEach(() => {
 
-    options = {
-      returnUrl: 'origin',
-      chsWebUrl: 'accounts',
-      companyNumber: '12345678',
-      requestScopeAndPermissions: {
-        scope: "test_scope",
-        tokenPermissions: {
-          "test_permission": "create,update"
-        }
+    testRequestScopeAndPermissions = {
+      scope: "test_scope",
+      tokenPermissions: {
+        "test_permission": "create,update"
       }
     }
 
@@ -39,11 +34,11 @@ describe('Test tokenPermissionsPresent function', () => {
     })
 
     it('When the userProfile tokenPermissions is not present, return true', () => {
-      assert(additionalScopeIsRequired(options.requestScopeAndPermissions, {}))
+      assert(additionalScopeIsRequired(testRequestScopeAndPermissions, {}))
     })
 
     it('When the requestScopeAndPermissions tokenPermissions contains a key not present in userProfile tokenPermissions, return true', () => {
-      assert(additionalScopeIsRequired(options.requestScopeAndPermissions, userProfile))
+      assert(additionalScopeIsRequired(testRequestScopeAndPermissions, userProfile))
     })
 
     it('When the requestScopeAndPermissions tokenPermissions contains a key in userProfile tokenPermissions, but the userProfile token permission lacks a request value, return true', () => {
@@ -55,7 +50,7 @@ describe('Test tokenPermissionsPresent function', () => {
           "test_permission": "create"  // missing update
         }
       }
-      assert(additionalScopeIsRequired(options.requestScopeAndPermissions, userProfile))
+      assert(additionalScopeIsRequired(testRequestScopeAndPermissions, userProfile))
     })
 
     it('When the requestScopeAndPermissions tokenPermissions contains a key in userProfile tokenPermissions and the corresponding userProfile token permission request value matches, return false', () => {
@@ -67,7 +62,7 @@ describe('Test tokenPermissionsPresent function', () => {
           "test_permission": "create,update"
         }
       }
-      assert( ! additionalScopeIsRequired(options.requestScopeAndPermissions, userProfile))
+      assert( ! additionalScopeIsRequired(testRequestScopeAndPermissions, userProfile))
 
     })
 
@@ -80,7 +75,7 @@ describe('Test tokenPermissionsPresent function', () => {
           "test_permission": "update , create"
         }
       }
-      assert( ! additionalScopeIsRequired(options.requestScopeAndPermissions, userProfile))
+      assert( ! additionalScopeIsRequired(testRequestScopeAndPermissions, userProfile))
 
     })
 
@@ -94,10 +89,10 @@ describe('Test tokenPermissionsPresent function', () => {
           "test_permission": "create,update"
         }
       }
-      if (options.requestScopeAndPermissions) {
-         options.requestScopeAndPermissions.tokenPermissions = { "test_permission": "update,create" }
+      if (testRequestScopeAndPermissions) {
+        testRequestScopeAndPermissions.tokenPermissions = { "test_permission": "update,create" }
 
-         assert( ! additionalScopeIsRequired(options.requestScopeAndPermissions, userProfile))
+         assert( ! additionalScopeIsRequired(testRequestScopeAndPermissions, userProfile))
       } else {
         expect.fail("has test data been changed ?");
       }
@@ -108,7 +103,7 @@ describe('Test tokenPermissionsPresent function', () => {
       userProfile = {
         [UserProfileKeys.TokenPermissions]: null
       }
-      assert(additionalScopeIsRequired(options.requestScopeAndPermissions, userProfile))
+      assert(additionalScopeIsRequired(testRequestScopeAndPermissions, userProfile))
     })
   })
 

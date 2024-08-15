@@ -1,0 +1,75 @@
+import { Session} from '@companieshouse/node-session-handler'
+import { SessionKey } from '@companieshouse/node-session-handler/lib/session/keys/SessionKey'
+import { ISignInInfo } from '@companieshouse/node-session-handler/lib/session/model/SessionInterfaces'
+import { assert } from 'chai'
+import { Response } from 'express'
+import sinon from 'sinon'
+import { instance, mock, when } from 'ts-mockito'
+import { AuthOptions } from '../../src'
+import { authMiddlewareHelper } from '../../src/private-helpers/authMiddlewareHelper'
+import { RequestScopeAndPermissions } from '../../src/private-helpers/RequestScopeAndPermissions'
+import {
+  generateRequest,
+  generateResponse,
+  generateSignInInfoAuthedForScope
+} from '../mockGeneration'
+
+/*
+   All tests with just AuthOptions are in the index.ts
+   This file has just has the additional tests for when we add RequestScopeAndPermissions option and
+   it a generic test for ny of the functions within the scopes-permissions directory
+*/
+
+describe('Test tokenPermissions conditionals in authMiddleware', () => {
+
+  const mockReturnUrlWithScope = 'accounts/signin?return_to=origin&additional_scope=test_scope'
+  const mockUserId = 'sA=='
+
+  let redirectStub: sinon.SinonStub
+  let opts: AuthOptions
+  let testRequestScopeAndPermissions: RequestScopeAndPermissions
+  let mockResponse: Response
+  let mockNext: sinon.SinonStub
+
+  beforeEach(() => {
+    redirectStub = sinon.stub()
+    opts = {
+      returnUrl: 'origin',
+      chsWebUrl: 'accounts',
+
+    }
+    testRequestScopeAndPermissions = {
+        scope: "test_scope",
+        tokenPermissions: {
+          "test_permission": "create,update"
+        }
+      }
+    mockResponse = generateResponse()
+    mockResponse.redirect = redirectStub
+    mockNext = sinon.stub()
+  })
+  
+  it('When there is no session and requestScopeAndPermissions, the middleware should not call next and should trigger redirect with additional scope', () => {
+
+    const mockRequest = generateRequest()
+
+    authMiddlewareHelper(opts, testRequestScopeAndPermissions)(mockRequest, mockResponse, mockNext)
+    assert(redirectStub.calledOnceWith(mockReturnUrlWithScope))
+    assert(mockNext.notCalled)
+  })
+
+    
+  it('When the user is not logged in the middleware and requestScopeAndPermissions should not call next and should trigger redirect with additional scope', () => {
+    const unAuthedSession = mock(Session)
+    const mockRequest = generateRequest(instance(unAuthedSession))
+    const result = generateSignInInfoAuthedForScope(mockUserId, 0, "test_scope");
+    
+
+    when(unAuthedSession.get<ISignInInfo>(SessionKey.SignInInfo)).thenReturn(result)
+    authMiddlewareHelper(opts, testRequestScopeAndPermissions)(mockRequest, mockResponse, mockNext)
+    assert(redirectStub.calledOnceWith(mockReturnUrlWithScope))
+    assert(mockNext.notCalled)
+
+  })
+
+})
