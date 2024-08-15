@@ -4,7 +4,8 @@ Security for web applications in node
 
 ## Authorisation
 
-If your application uses 
+If your application uses OAUTH scopes and permissions in authorisation then use one of the wrapper functions within the `src/scopes-permissions` directory
+Otherwise call 
 
 ## Cross Site Request Forgery (CSRF) protection
 

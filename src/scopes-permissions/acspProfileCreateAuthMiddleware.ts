@@ -1,8 +1,8 @@
 import {NextFunction, Request, RequestHandler, Response} from 'express'
 import {AuthOptions} from '../'
 import {authMiddlewareHelper} from '../private-helpers/authMiddlewareHelper'
-import { logger } from 'app/private-helpers/createLogger';
-import { RequestScopeAndPermissions } from 'app/private-helpers/RequestScopeAndPermissions';
+import { logger } from '../private-helpers/createLogger';
+import { RequestScopeAndPermissions } from '../private-helpers/RequestScopeAndPermissions';
 
 
 export const acspProfileCreateAuthMiddleware = (options: AuthOptions): RequestHandler => (
