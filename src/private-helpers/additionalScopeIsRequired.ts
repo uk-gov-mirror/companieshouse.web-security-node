@@ -1,20 +1,23 @@
 import { IUserProfile } from '@companieshouse/node-session-handler/lib/session/model/SessionInterfaces'
 import { UserProfileKeys } from '@companieshouse/node-session-handler/lib/session/keys/UserProfileKeys'
 import { RequestScopeAndPermissions } from './RequestScopeAndPermissions'
+import {logger, LOG_MESSAGE_APP_NAME} from './createLogger'
+
 
 // return TRUE if
 //   (1) any key in requestScopeAndPermissions.tokenPermissions object is missing from userProfile.tokenPermissions object, OR
 //   (2) a value of a key in requestScopeAndPermissions.tokenPermissions object is not in the corresponding value of the same
 //       key in userProfile.tokenPermissions
 // note for (2) we would need to map values "create,update,etc" => "create", "update", "etc" to get individual values
-export function additionalScopeIsRequired(requestScopeAndPermissions: RequestScopeAndPermissions | undefined | null, userProfile: IUserProfile): boolean {
+export function additionalScopeIsRequired(requestScopeAndPermissions: RequestScopeAndPermissions | undefined | null, userProfile: IUserProfile, userId = "UNKNOWN"): boolean {
 
-  // user has not specified any scopes
   if (!requestScopeAndPermissions) {
+    logger.info(`${LOG_MESSAGE_APP_NAME} userId=${userId}, user has not specified any scopes`)
     return false;
   }
 
   if (!userProfile.hasOwnProperty(UserProfileKeys.TokenPermissions)) {
+    logger.info(`${LOG_MESSAGE_APP_NAME} userId=${userId}, UserProfile missing Token Permissions property`)
     return true;
   }
 
@@ -22,6 +25,7 @@ export function additionalScopeIsRequired(requestScopeAndPermissions: RequestSco
 
   // belt and braces
   if (userProfileTokenPermissions == null) {
+    logger.info(`${LOG_MESSAGE_APP_NAME} userId=${userId}, UserProfile Token Permissions property has null value`)
     return true;
   }
 
@@ -29,7 +33,8 @@ export function additionalScopeIsRequired(requestScopeAndPermissions: RequestSco
   for (const key in requestScopeAndPermissions.tokenPermissions) {
 
     if (!userProfileTokenPermissions.hasOwnProperty(key)) {
-      return true; // key is missing in userProfile, so since we request this permission we will need to add it
+      logger.debug(`${LOG_MESSAGE_APP_NAME} userId=${userId}, key is missing in userProfile, so since we request this permission we will need to add it`)
+      return true;
     }
 
     const requestValue = requestScopeAndPermissions.tokenPermissions[key];
@@ -41,7 +46,7 @@ export function additionalScopeIsRequired(requestScopeAndPermissions: RequestSco
         .split(',')                     // Split the string by commas
         .map(item => item.trim())       // Trim whitespace from each item
         .filter(item => item !== '')    // Remove any empty strings
-        .sort()                         // Sort the array alphabetically
+        .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' })) // Sorts the array alphabetically
         .join(',');                     // Join the array back into a string
     };
 
@@ -49,9 +54,11 @@ export function additionalScopeIsRequired(requestScopeAndPermissions: RequestSco
     const userProfileArray = normaliseCommaSeparatedString(userProfileValue);
 
     if ( ! userProfileArray.includes(requestArray)) {
-      return true; // user profile does not have all the permissions for the requested key
+      logger.debug(`${LOG_MESSAGE_APP_NAME} userId=${userId}, user profile does not have all the permissions for the requested key`)
+      return true; 
     }
   }
 
+  logger.debug(`${LOG_MESSAGE_APP_NAME} userId=${userId}, user profile HAS all the permissions for the requested key`)
   return false;
 }

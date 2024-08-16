@@ -29,7 +29,7 @@ const authMiddlewareHelper = (options, requestScopeAndPermissions) => (req, res,
     const signedIn = signInInfo[SignInInfoKeys_1.SignInInfoKeys.SignedIn] === 1;
     const userProfile = signInInfo[SignInInfoKeys_1.SignInInfoKeys.UserProfile] || {};
     const userId = userProfile === null || userProfile === void 0 ? void 0 : userProfile.id;
-    if (requestScopeAndPermissions && (0, additionalScopeIsRequired_1.additionalScopeIsRequired)(requestScopeAndPermissions, userProfile)) {
+    if (requestScopeAndPermissions && (0, additionalScopeIsRequired_1.additionalScopeIsRequired)(requestScopeAndPermissions, userProfile, userId)) {
         redirectURI = redirectURI.concat(`&additional_scope=${requestScopeAndPermissions.scope}`);
         createLogger_1.logger.info(`${appName} - handler: userId=${userId}, Not Authorised for ${requestScopeAndPermissions}... Updating URL to: ${redirectURI}`);
     }
@@ -46,12 +46,12 @@ const authMiddlewareHelper = (options, requestScopeAndPermissions) => (req, res,
         return res.redirect(redirectURI);
     }
     createLogger_1.logger.debug(`${appName} - handler: userId=${userId} authenticated successfully`);
-    if (!userProfile.hasOwnProperty(UserProfileKeys_1.UserProfileKeys.TokenPermissions)) {
+    if (userProfile.hasOwnProperty(UserProfileKeys_1.UserProfileKeys.TokenPermissions)) {
         const userProfileTokenPermissions = userProfile[UserProfileKeys_1.UserProfileKeys.TokenPermissions];
-        createLogger_1.logger.debug(`${appName} - userProfileTokenPermissions are ${userProfileTokenPermissions}`);
+        createLogger_1.logger.debug(`${appName} : userId=${userId}, userProfileTokenPermissions are ${userProfileTokenPermissions}`);
     }
     else {
-        createLogger_1.logger.debug(`${appName} - No userProfileTokenPermissions present`);
+        createLogger_1.logger.debug(`${appName} : userId=${userId}, No userProfileTokenPermissions present`);
     }
     return next();
 };

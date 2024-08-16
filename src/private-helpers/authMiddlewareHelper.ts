@@ -44,7 +44,7 @@ export const authMiddlewareHelper = (options: AuthOptions, requestScopeAndPermis
     const userProfile: IUserProfile = signInInfo![SignInInfoKeys.UserProfile] || {}
     const userId: string | undefined = userProfile?.id
   
-    if (requestScopeAndPermissions && additionalScopeIsRequired(requestScopeAndPermissions, userProfile)) {
+    if (requestScopeAndPermissions && additionalScopeIsRequired(requestScopeAndPermissions, userProfile, userId)) {
       redirectURI = redirectURI.concat(`&additional_scope=${requestScopeAndPermissions.scope}`)
       logger.info(`${appName} - handler: userId=${userId}, Not Authorised for ${requestScopeAndPermissions}... Updating URL to: ${redirectURI}`)
     }
@@ -67,11 +67,11 @@ export const authMiddlewareHelper = (options: AuthOptions, requestScopeAndPermis
     // TODO - get app name also from logger file (see main branch)
     logger.debug(`${appName} - handler: userId=${userId} authenticated successfully`)
 
-    if (!userProfile.hasOwnProperty(UserProfileKeys.TokenPermissions)) {
+    if ( userProfile.hasOwnProperty(UserProfileKeys.TokenPermissions) ) {
       const userProfileTokenPermissions = userProfile[UserProfileKeys.TokenPermissions];
-      logger.debug(`${appName} - userProfileTokenPermissions are ${userProfileTokenPermissions}`)
+      logger.debug(`${appName} : userId=${userId}, userProfileTokenPermissions are ${userProfileTokenPermissions}`)
     } else {
-      logger.debug(`${appName} - No userProfileTokenPermissions present`)
+      logger.debug(`${appName} : userId=${userId}, No userProfileTokenPermissions present`)
     }
 
     return next()
