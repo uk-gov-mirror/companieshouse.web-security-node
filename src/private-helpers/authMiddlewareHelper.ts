@@ -1,11 +1,12 @@
 import '@companieshouse/node-session-handler'
 import {SessionKey} from '@companieshouse/node-session-handler/lib/session/keys/SessionKey'
 import {SignInInfoKeys} from '@companieshouse/node-session-handler/lib/session/keys/SignInInfoKeys'
+import { UserProfileKeys } from '@companieshouse/node-session-handler/lib/session/keys/UserProfileKeys'
 import {ISignInInfo, IUserProfile} from '@companieshouse/node-session-handler/lib/session/model/SessionInterfaces'
 import {NextFunction, Request, RequestHandler, Response} from 'express'
 import {AuthOptions} from '..'
 import {additionalScopeIsRequired}  from './additionalScopeIsRequired'
-import {logger} from './createLogger'
+import {logger, LOG_MESSAGE_APP_NAME} from './createLogger'
 import {RequestScopeAndPermissions} from './RequestScopeAndPermissions'
 
 
@@ -14,7 +15,7 @@ export const authMiddlewareHelper = (options: AuthOptions, requestScopeAndPermis
     res: Response,
     next: NextFunction
   ) => {
-    const appName = 'CH Web Security Node'
+    const appName = LOG_MESSAGE_APP_NAME
 
     logger.debug(`${appName} - handler: in auth helper function`)
   
@@ -63,7 +64,16 @@ export const authMiddlewareHelper = (options: AuthOptions, requestScopeAndPermis
       return res.redirect(redirectURI)
     }
   
+    // TODO - get app name also from logger file (see main branch)
     logger.debug(`${appName} - handler: userId=${userId} authenticated successfully`)
+
+    if (!userProfile.hasOwnProperty(UserProfileKeys.TokenPermissions)) {
+      const userProfileTokenPermissions = userProfile[UserProfileKeys.TokenPermissions];
+      logger.debug(`${appName} - userProfileTokenPermissions are ${userProfileTokenPermissions}`)
+    } else {
+      logger.debug(`${appName} - No userProfileTokenPermissions present`)
+    }
+
     return next()
   }
 

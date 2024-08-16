@@ -4,10 +4,11 @@ exports.authMiddlewareHelper = void 0;
 require("@companieshouse/node-session-handler");
 const SessionKey_1 = require("@companieshouse/node-session-handler/lib/session/keys/SessionKey");
 const SignInInfoKeys_1 = require("@companieshouse/node-session-handler/lib/session/keys/SignInInfoKeys");
+const UserProfileKeys_1 = require("@companieshouse/node-session-handler/lib/session/keys/UserProfileKeys");
 const additionalScopeIsRequired_1 = require("./additionalScopeIsRequired");
 const createLogger_1 = require("./createLogger");
 const authMiddlewareHelper = (options, requestScopeAndPermissions) => (req, res, next) => {
-    const appName = 'CH Web Security Node';
+    const appName = createLogger_1.LOG_MESSAGE_APP_NAME;
     createLogger_1.logger.debug(`${appName} - handler: in auth helper function`);
     if (!options.chsWebUrl) {
         createLogger_1.logger.error(`${appName} - handler: Required Field CHS Web URL not set`);
@@ -45,6 +46,13 @@ const authMiddlewareHelper = (options, requestScopeAndPermissions) => (req, res,
         return res.redirect(redirectURI);
     }
     createLogger_1.logger.debug(`${appName} - handler: userId=${userId} authenticated successfully`);
+    if (!userProfile.hasOwnProperty(UserProfileKeys_1.UserProfileKeys.TokenPermissions)) {
+        const userProfileTokenPermissions = userProfile[UserProfileKeys_1.UserProfileKeys.TokenPermissions];
+        createLogger_1.logger.debug(`${appName} - userProfileTokenPermissions are ${userProfileTokenPermissions}`);
+    }
+    else {
+        createLogger_1.logger.debug(`${appName} - No userProfileTokenPermissions present`);
+    }
     return next();
 };
 exports.authMiddlewareHelper = authMiddlewareHelper;

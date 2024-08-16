@@ -14,7 +14,7 @@ const acspProfileCreateAuthMiddleware = (options) => (req, res, next) => {
             'acsp_profile': 'create'
         }
     };
-    createLogger_1.logger.debug("Auth acspProfileCreate");
+    createLogger_1.logger.debug(`${createLogger_1.LOG_MESSAGE_APP_NAME} - Auth acspProfileCreate`);
     return (0, authMiddlewareHelper_1.authMiddlewareHelper)(authMiddlewareConfig, acspProfileCreateRequestScopeAndPermissions)(req, res, next);
 };
 exports.acspProfileCreateAuthMiddleware = acspProfileCreateAuthMiddleware;
