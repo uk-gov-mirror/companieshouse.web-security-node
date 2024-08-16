@@ -1,7 +1,7 @@
 node_modules
 coverage
 .nyc_output
-#dist
+dist
 
 .idea/
 .vscode
