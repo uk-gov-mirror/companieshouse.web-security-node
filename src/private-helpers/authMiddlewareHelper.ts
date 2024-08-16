@@ -64,7 +64,6 @@ export const authMiddlewareHelper = (options: AuthOptions, requestScopeAndPermis
       return res.redirect(redirectURI)
     }
   
-    // TODO - get app name also from logger file (see main branch)
     logger.debug(`${appName} - handler: userId=${userId} authenticated successfully`)
 
     if ( userProfile.hasOwnProperty(UserProfileKeys.TokenPermissions) ) {
