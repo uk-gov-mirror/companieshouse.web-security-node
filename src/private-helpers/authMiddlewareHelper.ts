@@ -69,7 +69,7 @@ export const authMiddlewareHelper = (options: AuthOptions, requestScopeAndPermis
 
     if ( userProfile.hasOwnProperty(UserProfileKeys.TokenPermissions) ) {
       const userProfileTokenPermissions = userProfile[UserProfileKeys.TokenPermissions];
-      logger.debug(`${appName} : userId=${userId}, userProfileTokenPermissions are ${userProfileTokenPermissions}`)
+      logger.debug(`${appName} : userId=${userId}, userProfileTokenPermissions : ${JSON.stringify(userProfileTokenPermissions, null, 2)}}`)
     } else {
       logger.debug(`${appName} : userId=${userId}, No userProfileTokenPermissions present`)
     }

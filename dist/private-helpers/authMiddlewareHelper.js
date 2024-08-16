@@ -48,7 +48,7 @@ const authMiddlewareHelper = (options, requestScopeAndPermissions) => (req, res,
     createLogger_1.logger.debug(`${appName} - handler: userId=${userId} authenticated successfully`);
     if (userProfile.hasOwnProperty(UserProfileKeys_1.UserProfileKeys.TokenPermissions)) {
         const userProfileTokenPermissions = userProfile[UserProfileKeys_1.UserProfileKeys.TokenPermissions];
-        createLogger_1.logger.debug(`${appName} : userId=${userId}, userProfileTokenPermissions are ${userProfileTokenPermissions}`);
+        createLogger_1.logger.debug(`${appName} : userId=${userId}, userProfileTokenPermissions : ${JSON.stringify(userProfileTokenPermissions, null, 2)}}`);
     }
     else {
         createLogger_1.logger.debug(`${appName} : userId=${userId}, No userProfileTokenPermissions present`);
