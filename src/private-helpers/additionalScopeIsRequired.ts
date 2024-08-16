@@ -32,8 +32,10 @@ export function additionalScopeIsRequired(requestScopeAndPermissions: RequestSco
   // check each requested key is in the user profile
   for (const key in requestScopeAndPermissions.tokenPermissions) {
 
+    logger.debug(`${LOG_MESSAGE_APP_NAME} userId=${userId} key=${key}, checking UserProfile for token permission key`)
+
     if (!userProfileTokenPermissions.hasOwnProperty(key)) {
-      logger.debug(`${LOG_MESSAGE_APP_NAME} userId=${userId}, key is missing in userProfile, so since we request this permission we will need to add it`)
+      logger.debug(`${LOG_MESSAGE_APP_NAME} userId=${userId} key=${key}, token permission key is missing in userProfile, so since we request this permission we will need to add it`)
       return true;
     }
 
@@ -54,11 +56,11 @@ export function additionalScopeIsRequired(requestScopeAndPermissions: RequestSco
     const userProfileArray = normaliseCommaSeparatedString(userProfileValue);
 
     if ( ! userProfileArray.includes(requestArray)) {
-      logger.debug(`${LOG_MESSAGE_APP_NAME} userId=${userId}, user profile does not have all the permissions for the requested key`)
+      logger.debug(`${LOG_MESSAGE_APP_NAME} userId=${userId} key=${key}, user profile does not have all the permissions for the requested token permission key`)
       return true; 
     }
   }
 
-  logger.debug(`${LOG_MESSAGE_APP_NAME} userId=${userId}, user profile HAS all the permissions for the requested key`)
+  logger.debug(`${LOG_MESSAGE_APP_NAME} userId=${userId}, user profile HAS all the permissions for the requested token permission keys`)
   return false;
 }

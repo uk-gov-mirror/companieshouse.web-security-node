@@ -18,8 +18,9 @@ function additionalScopeIsRequired(requestScopeAndPermissions, userProfile, user
         return true;
     }
     for (const key in requestScopeAndPermissions.tokenPermissions) {
+        createLogger_1.logger.debug(`${createLogger_1.LOG_MESSAGE_APP_NAME} userId=${userId} key=${key}, checking UserProfile for token permission key`);
         if (!userProfileTokenPermissions.hasOwnProperty(key)) {
-            createLogger_1.logger.debug(`${createLogger_1.LOG_MESSAGE_APP_NAME} userId=${userId}, key is missing in userProfile, so since we request this permission we will need to add it`);
+            createLogger_1.logger.debug(`${createLogger_1.LOG_MESSAGE_APP_NAME} userId=${userId} key=${key}, token permission key is missing in userProfile, so since we request this permission we will need to add it`);
             return true;
         }
         const requestValue = requestScopeAndPermissions.tokenPermissions[key];
@@ -35,11 +36,11 @@ function additionalScopeIsRequired(requestScopeAndPermissions, userProfile, user
         const requestArray = normaliseCommaSeparatedString(requestValue);
         const userProfileArray = normaliseCommaSeparatedString(userProfileValue);
         if (!userProfileArray.includes(requestArray)) {
-            createLogger_1.logger.debug(`${createLogger_1.LOG_MESSAGE_APP_NAME} userId=${userId}, user profile does not have all the permissions for the requested key`);
+            createLogger_1.logger.debug(`${createLogger_1.LOG_MESSAGE_APP_NAME} userId=${userId} key=${key}, user profile does not have all the permissions for the requested token permission key`);
             return true;
         }
     }
-    createLogger_1.logger.debug(`${createLogger_1.LOG_MESSAGE_APP_NAME} userId=${userId}, user profile HAS all the permissions for the requested key`);
+    createLogger_1.logger.debug(`${createLogger_1.LOG_MESSAGE_APP_NAME} userId=${userId}, user profile HAS all the permissions for the requested token permission keys`);
     return false;
 }
 exports.additionalScopeIsRequired = additionalScopeIsRequired;
