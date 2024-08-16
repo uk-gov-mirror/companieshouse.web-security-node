@@ -11,6 +11,8 @@ import { RequestScopeAndPermissions } from '../../src/private-helpers/RequestSco
 import {
   generateRequest,
   generateResponse,
+  generateSignInInfo,
+  generateSignInInfoWithTokenPermissions,
   generateSignInInfoAuthedForScope
 } from '../mockGeneration'
 
@@ -71,5 +73,25 @@ describe('Test tokenPermissions conditionals in authMiddleware', () => {
     assert(mockNext.notCalled)
 
   })
+
+  it('When the user is signed in but does in UserProfile not have the privileges in testRequestScopeAndPermissions the middleware should not call next and should trigger redirect', () => {
+    const authedSession = mock(Session)
+    const mockRequest = generateRequest(instance(authedSession))
+
+    when(authedSession.get<ISignInInfo>(SessionKey.SignInInfo)).thenReturn(generateSignInInfo(mockUserId, 1))
+    authMiddlewareHelper(opts, testRequestScopeAndPermissions)(mockRequest, mockResponse, mockNext)
+    assert(redirectStub.calledOnceWith(mockReturnUrlWithScope))
+    assert(mockNext.notCalled)
+  })
+
+  it('When the user is signed in and does in UserProfile have the privileges in testRequestScopeAndPermissions the middleware should  call next', () => {
+    const authedSession = mock(Session)
+    const mockRequest = generateRequest(instance(authedSession))
+
+    when(authedSession.get<ISignInInfo>(SessionKey.SignInInfo)).thenReturn(generateSignInInfoWithTokenPermissions(mockUserId, 1))
+    authMiddlewareHelper(opts, testRequestScopeAndPermissions)(mockRequest, mockResponse, mockNext)
+    assert(mockNext.calledOnce)
+  })
+
 
 })
