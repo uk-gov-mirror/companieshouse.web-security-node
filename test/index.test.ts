@@ -90,7 +90,7 @@ describe('Authentication Middleware with company number', () => {
     mockNext = sinon.stub()
   })
 
-  it('When the user is not authed for company the middleware should not call next and should trigger redirect', () => {
+  it('When the user is not authenticated for company the middleware should not call next and should trigger redirect', () => {
     const authedSession = mock(Session)
     const mockRequest = generateRequest(instance(authedSession))
 

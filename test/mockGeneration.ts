@@ -1,5 +1,6 @@
 import { Session } from '@companieshouse/node-session-handler'
-import { SignInInfoKeys } from '@companieshouse/node-session-handler/lib/session/keys/SignInInfoKeys'
+import { SignInInfoKeys} from '@companieshouse/node-session-handler/lib/session/keys/SignInInfoKeys'
+import { UserProfileKeys } from '@companieshouse/node-session-handler/lib/session/keys/UserProfileKeys'
 import { ISignInInfo } from '@companieshouse/node-session-handler/lib/session/model/SessionInterfaces'
 import { Request, Response } from 'express'
 import sinon from 'sinon'
@@ -20,10 +21,33 @@ export function generateSignInInfo(mockUserId: string, signedIn: number): ISignI
   }
 }
 
+export function generateSignInInfoWithTokenPermissions(mockUserId: string, signedIn: number): ISignInInfo {
+  return {
+    signed_in: signedIn,
+    user_profile: {
+      id: mockUserId,
+      [UserProfileKeys.TokenPermissions]: {
+        "overseas_entities": "create,update,delete",
+        "user_orders": "create,read,update,delete",
+        "acsp_profile": "create",
+        "test_permission": "create,update"
+      }
+    }
+  }
+}
+
+
 export function generateSignInInfoAuthedForCompany(mockUserId: string,
                                                    signedIn: number, companyNumber: string): ISignInInfo {
   const signInInfo: ISignInInfo = generateSignInInfo(mockUserId, signedIn)
   signInInfo[SignInInfoKeys.CompanyNumber] = companyNumber
+  return signInInfo
+}
+
+export function generateSignInInfoAuthedForScope(mockUserId: string,
+                                                 signedIn: number, additionScope: string): ISignInInfo {
+  const signInInfo: ISignInInfo = generateSignInInfo(mockUserId, signedIn)
+  signInInfo[SignInInfoKeys.AdditionalScope] =  additionScope
   return signInInfo
 }
 
