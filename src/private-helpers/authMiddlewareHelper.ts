@@ -59,7 +59,7 @@ export const authMiddlewareHelper = (options: AuthOptions, requestScopeAndPermis
       return res.redirect(redirectURI)
     }
   
-    if (requestScopeAndPermissions && additionalScopeIsRequired(requestScopeAndPermissions, userProfile)) {
+    if (requestScopeAndPermissions && additionalScopeIsRequired(requestScopeAndPermissions, userProfile, userId)) {
       logger.info(`${appName} - handler: userId=${userId}, Not Authorised for ${requestScopeAndPermissions}... Redirecting to: ${redirectURI}`)
       return res.redirect(redirectURI)
     }
