@@ -95,13 +95,7 @@ const csrfFilter = (options: CsrfOptions): RequestHandler => {
 
         try {
             if (req.headers['content-type']?.includes('multipart/form-data')) {
-                const busboy: Busboy.Busboy = Busboy({
-                    headers: req.headers,
-                });
-
-                busboy.on('field', (fieldname, value) => {
-                    req.body[fieldname] = value
-                })
+                extractFields(req)
             }
 
             // This filter requires the session to be set on the request - fail
@@ -178,3 +172,14 @@ const csrfFilter = (options: CsrfOptions): RequestHandler => {
         }
     }
 }
+
+export const extractFields = (req: Request) => {
+    const busboy: Busboy.Busboy = Busboy({
+        headers: req.headers,
+    })
+
+    busboy.on('field', (fieldname, value) => {
+        req.body[fieldname] = value
+    })
+}
+
