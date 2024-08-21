@@ -94,7 +94,7 @@ const csrfFilter = (options: CsrfOptions): RequestHandler => {
         }
 
         try {
-            if (req.headers['content-type']?.includes('multipart/form-data')) {
+            if (isContentTypeMultiPartFormData(req)) {
                 extractFields(req)
             }
 
@@ -173,7 +173,11 @@ const csrfFilter = (options: CsrfOptions): RequestHandler => {
     }
 }
 
-export const extractFields = (req: Request) => {
+const isContentTypeMultiPartFormData = (req: Request): boolean => {
+    return !!req.headers['content-type']?.includes('multipart/form-data')
+}
+
+export const extractFields = (req: Request): void => {
     const busboy: Busboy.Busboy = Busboy({
         headers: req.headers,
     })
@@ -182,4 +186,3 @@ export const extractFields = (req: Request) => {
         req.body[fieldname] = value
     })
 }
-

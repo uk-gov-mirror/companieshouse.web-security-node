@@ -68,6 +68,7 @@ describe("csrf-protection/middleware", () => {
             assert(mockNext.calledOnceWithExactly())
         });
 
+        // The code is functional but the test is skipped due to the dependence on mocha/sinon which makes it difficult to mock function calls.
         it.skip("calls next with no args when csrf token in request body matches csrf token in session and content-type multipart/form-data", () => {
             const csrfToken = "0fb9a779-2262-410f-a075-7f1359f142b6";
             const sessionMock = mock(Session);
