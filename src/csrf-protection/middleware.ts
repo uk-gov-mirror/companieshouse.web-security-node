@@ -14,7 +14,7 @@ import {
 const APP_NAME = 'web-security-node'
 const logger = createLogger(APP_NAME)
 
-const DEFAULT_CSRF_TOKEN_HEADER = 'X-CSRF-TOKEN'
+const DEFAULT_CSRF_TOKEN_HEADER = 'x-csrf-token'
 const DEFAULT_CSRF_TOKEN_PARAMETER_NAME = '_csrf'
 const MUTABLE_METHODS = ['POST', 'DELETE', 'PUT', 'PATCH']
 const DEFAULT_CHS_SESSION_COOKIE_NAME = '_SID'

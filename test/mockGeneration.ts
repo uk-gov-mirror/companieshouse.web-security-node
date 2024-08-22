@@ -56,7 +56,7 @@ export function generateRequest(requestSession?: Session, csrfTokenInHeader?: st
     ...(
       csrfTokenInHeader
       ? {
-        "X-CSRF-TOKEN": csrfTokenInHeader
+        "x-csrf-token": csrfTokenInHeader
       }
       : {}
     ),
