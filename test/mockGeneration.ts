@@ -51,17 +51,16 @@ export function generateSignInInfoAuthedForScope(mockUserId: string,
   return signInInfo
 }
 
-export function generateRequest(requestSession?: Session, customHeaders = {} , csrfTokenInHeader?: string, csrfTokenInBody?: string, method: 'GET' | 'POST' | "DELETE" = "GET"): Request {
-  let headers = {
+export function generateRequest(requestSession?: Session, csrfTokenInHeader?: string, csrfTokenInBody?: string, method: 'GET' | 'POST' | "DELETE" = "GET"): Request {
+  const headers = {
     ...(
       csrfTokenInHeader
       ? {
-        "X-CSRF-TOKEN": csrfTokenInHeader
+        "x-csrf-token": csrfTokenInHeader
       }
       : {}
     ),
-    host: "localhost",
-    ...customHeaders
+    host: "localhost"
   }
 
   const body = csrfTokenInBody

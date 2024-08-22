@@ -34,6 +34,11 @@ which modify data (for example `POST`/`DELETE`/`PUT`) to include the CSRF
 token. This implements a
 [Synchronisation Token Pattern approach](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#synchronizer-token-pattern)
 
+> [!IMPORTANT]
+> If you are submitting requests which are of type `multipart/form-data` then
+> you will will need to send the CSRF token as a header, by default: this is
+> the header `x-csrf-token` but can be customised using the options.
+
 ### Installation instructions
 
 1. Install the library (if not already installed).
