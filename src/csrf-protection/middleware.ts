@@ -5,8 +5,6 @@ import { createLogger } from '@companieshouse/structured-logging-node'
 import { NextFunction, Request, RequestHandler, Response } from 'express'
 import expressAsyncHandler from 'express-async-handler'
 import { v4 as uuidv4 } from 'uuid'
-import Busboy from 'busboy';
-
 import {
     CsrfTokensMismatchError,
     MissingCsrfSessionToken,
@@ -94,10 +92,6 @@ const csrfFilter = (options: CsrfOptions): RequestHandler => {
         }
 
         try {
-            if (isContentTypeMultiPartFormData(req)) {
-                extractFields(req)
-            }
-
             // This filter requires the session to be set on the request - fail
             // the request if there is no session set, probably the result of
             // application misconfiguration
@@ -171,18 +165,4 @@ const csrfFilter = (options: CsrfOptions): RequestHandler => {
             return next(err)
         }
     }
-}
-
-const isContentTypeMultiPartFormData = (req: Request): boolean => {
-    return !!req.headers['content-type']?.includes('multipart/form-data')
-}
-
-export const extractFields = (req: Request): void => {
-    const busboy: Busboy.Busboy = Busboy({
-        headers: req.headers,
-    })
-
-    busboy.on('field', (fieldname, value) => {
-        req.body[fieldname] = value
-    })
 }
