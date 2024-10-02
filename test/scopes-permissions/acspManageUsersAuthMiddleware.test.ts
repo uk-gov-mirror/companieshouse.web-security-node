@@ -12,7 +12,7 @@ import {
     generateRequest,
     generateResponse
 } from '../mockGeneration'
-import { UserRole } from '../../src/scopes-permissions/acspManageUsersAuthMiddleware'
+import { UserRoles } from '../../src/scopes-permissions/acspManageUsersAuthMiddleware'
 
 describe('Test acspManageUsersAuthMiddleware options', () => {
 
@@ -32,7 +32,7 @@ describe('Test acspManageUsersAuthMiddleware options', () => {
         }
         acspOpts = {
             acspNumber: 'abc123',
-            userRole: UserRole.STANDARD
+            userRole: UserRoles.STANDARD
         }
         mockResponse = generateResponse()
         mockResponse.redirect = redirectStub

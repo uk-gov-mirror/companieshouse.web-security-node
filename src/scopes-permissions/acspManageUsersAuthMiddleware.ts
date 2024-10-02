@@ -1,14 +1,16 @@
 import { NextFunction, Request, RequestHandler, Response } from 'express'
 import { AuthOptions } from '..'
+import { getAcspManageUserScopesAndPermissions } from '../private-helpers/acspManageUsersScopesAndPermissions'
 import { authMiddlewareHelper } from '../private-helpers/authMiddlewareHelper'
-import { logger, LOG_MESSAGE_APP_NAME } from '../private-helpers/createLogger';
-import { getAcspManageUserScopesAndPermissions } from '../private-helpers/acspManageUsersScopesAndPermissions';
+import { logger, LOG_MESSAGE_APP_NAME } from '../private-helpers/createLogger'
 
-export enum UserRole {
-    OWNER = "owner",
-    ADMIN = "admin",
-    STANDARD = "standard"
-}
+export const UserRoles = {
+    OWNER : 'owner',
+    ADMIN : 'admin',
+    STANDARD : 'standard'
+} as const
+
+export type UserRole = (typeof UserRoles)[keyof typeof UserRoles];
 
 export interface AcspOptions {
     userRole?: UserRole,
@@ -24,7 +26,7 @@ export const acspManageUsersAuthMiddleware = (options: AuthOptions, acspOptions:
     const authMiddlewareConfig: AuthOptions = {
         chsWebUrl: options.chsWebUrl,
         returnUrl: options.returnUrl,
-    };
+    }
 
     if (!acspOptions.acspNumber?.length || acspOptions.acspNumber === 'undefined') {
         logger.error(`${LOG_MESSAGE_APP_NAME} - acspManageUsersAuthMiddleware: Acsp Number invalid`)
@@ -32,5 +34,5 @@ export const acspManageUsersAuthMiddleware = (options: AuthOptions, acspOptions:
     }
     logger.debug(`${LOG_MESSAGE_APP_NAME} - Auth acspManageUsers`)
 
-    return authMiddlewareHelper(authMiddlewareConfig, getAcspManageUserScopesAndPermissions(acspOptions))(req, res, next);
+    return authMiddlewareHelper(authMiddlewareConfig, getAcspManageUserScopesAndPermissions(acspOptions))(req, res, next)
 }

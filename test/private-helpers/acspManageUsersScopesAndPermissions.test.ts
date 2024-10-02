@@ -1,7 +1,7 @@
 import { assert } from 'chai'
 import { getAcspManageUserScopesAndPermissions } from '../../src/private-helpers/acspManageUsersScopesAndPermissions'
 import { AcspOptions } from '../../src'
-import { UserRole } from '../../src/scopes-permissions/acspManageUsersAuthMiddleware'
+import { UserRoles } from '../../src/scopes-permissions/acspManageUsersAuthMiddleware'
 
 describe('Test getAcspManageUserScopesAndPermissions function', () => {
     let acspOpts: AcspOptions
@@ -48,7 +48,7 @@ describe('Test getAcspManageUserScopesAndPermissions function', () => {
     it('Should return admin user permmissions when a role is admin ', () => {
         acspOpts = {
             acspNumber,
-            userRole: UserRole.ADMIN
+            userRole: UserRoles.ADMIN
         }
         assert.deepEqual(getAcspManageUserScopesAndPermissions(acspOpts), adminUserPermissions)
     })
@@ -56,7 +56,7 @@ describe('Test getAcspManageUserScopesAndPermissions function', () => {
     it('Should return owner permmissions when a role is owner ', () => {
         acspOpts = {
             acspNumber,
-            userRole: UserRole.OWNER
+            userRole: UserRoles.OWNER
         }
         assert.deepEqual(getAcspManageUserScopesAndPermissions(acspOpts), ownerPermissions)
     })
