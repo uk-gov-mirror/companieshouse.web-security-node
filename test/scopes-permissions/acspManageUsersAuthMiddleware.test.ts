@@ -9,91 +9,83 @@ import { instance, mock, when } from 'ts-mockito'
 import { AuthOptions, AcspOptions } from '../../src'
 import { acspManageUsersAuthMiddleware } from '../../src/scopes-permissions'
 import {
-  generateRequest,
-  generateResponse
+    generateRequest,
+    generateResponse
 } from '../mockGeneration'
 import { UserRole } from '../../src/scopes-permissions/acspManageUsersAuthMiddleware'
 
+describe('Test acspManageUsersAuthMiddleware options', () => {
 
+    const mockReturnUrlWithScope = 'accounts/signin?return_to=origin&additional_scope=https://api.company-information.service.gov.uk/authorized-corporate-service-provider/abc123'
 
-describe('Test tokenPermissions conditionals in acspManageUsersAuthMiddleware wrapper', () => {
+    let redirectStub: sinon.SinonStub
+    let opts: AuthOptions
+    let acspOpts: AcspOptions
+    let mockResponse: Response
+    let mockNext: sinon.SinonStub
 
-  const mockReturnUrlWithScope = 'accounts/signin?return_to=origin&additional_scope=https://api.company-information.service.gov.uk/authorized-corporate-service-provider/abc123'
-
-  let redirectStub: sinon.SinonStub
-  let opts: AuthOptions
-  let acspOpts: AcspOptions
-  let mockResponse: Response
-  let mockNext: sinon.SinonStub
-
-  beforeEach(() => {
-    redirectStub = sinon.stub()
-    opts = {
-      returnUrl: 'origin',
-      chsWebUrl: 'accounts',
-    }
-    acspOpts = {
-        acspNumber:'abc123',
-        userRole: UserRole.STANDARD
-    }
-    mockResponse = generateResponse()
-    mockResponse.redirect = redirectStub
-    mockNext = sinon.stub()
-  })
-
-  it('When there is no session and acspManageUsersAuthMiddleware, the middleware should not call next and should trigger redirect with additional scope', () => {
-
-    const mockRequest = generateRequest()
-
-    acspManageUsersAuthMiddleware(opts, acspOpts)(mockRequest, mockResponse, mockNext)
-    assert(redirectStub.calledOnceWith(mockReturnUrlWithScope))
-    assert(mockNext.notCalled)
-  })
-
-  it(`When ACSP number is blank, throw error`, () => {
-    const mockRequest = generateRequest()
-    acspOpts.acspNumber = '';
-
-    assert.throws(()=> acspManageUsersAuthMiddleware(opts, acspOpts)(mockRequest, mockResponse, mockNext), /invalid ACSP number/);
-    assert(redirectStub.notCalled)
-    assert(mockNext.notCalled)
-  })
-
-  it(`When ACSP number is 'undefined', throw error`, () => {
-    const mockRequest = generateRequest()
-    acspOpts.acspNumber = 'undefined';
-
-    assert.throws(()=> acspManageUsersAuthMiddleware(opts, acspOpts)(mockRequest, mockResponse, mockNext), /invalid ACSP number/);
-    assert(redirectStub.notCalled)
-    assert(mockNext.notCalled)
-  })
-
-  it(`Should call redirect when user does not have correct permissions`, () => {
-    const mockRequest = generateRequest()
-    acspManageUsersAuthMiddleware(opts, acspOpts)(mockRequest, mockResponse, mockNext)
-    assert(redirectStub.calledOnceWith(mockReturnUrlWithScope))
-    assert(mockNext.notCalled)
-  })
-
-  it(`Should call next when user has correct permissions`, () => {
-    const sessionMock = mock(Session);
-    const mockRequest = generateRequest(instance(sessionMock));
-
-    const signInInfo = {
-        signed_in: 1,
-        user_profile: {
-          id: 'mockUserId',
-          [UserProfileKeys.TokenPermissions]: {
-            "acsp_members": "read",
-            "acsp_number":'abc123'
-          }
+    beforeEach(() => {
+        redirectStub = sinon.stub()
+        opts = {
+            returnUrl: 'origin',
+            chsWebUrl: 'accounts',
         }
-      }
+        acspOpts = {
+            acspNumber: 'abc123',
+            userRole: UserRole.STANDARD
+        }
+        mockResponse = generateResponse()
+        mockResponse.redirect = redirectStub
+        mockNext = sinon.stub()
+    })
 
-    when(sessionMock.get<ISignInInfo>(SessionKey.SignInInfo)).thenReturn(signInInfo)
+    it('When there is no session and acspManageUsersAuthMiddleware, the middleware should not call next and should trigger redirect with additional scope', () => {
+        const mockRequest = generateRequest()
+        acspManageUsersAuthMiddleware(opts, acspOpts)(mockRequest, mockResponse, mockNext)
+        assert(redirectStub.calledOnceWith(mockReturnUrlWithScope))
+        assert(mockNext.notCalled)
+    })
 
-    acspManageUsersAuthMiddleware(opts, acspOpts)(mockRequest, mockResponse, mockNext)
-    assert(mockNext.calledOnceWithExactly())
-    assert(redirectStub.notCalled)
-  })
+    it(`When ACSP number is blank, throw error`, () => {
+        const mockRequest = generateRequest()
+        acspOpts.acspNumber = '';
+
+        assert.throws(() => acspManageUsersAuthMiddleware(opts, acspOpts)(mockRequest, mockResponse, mockNext), /invalid ACSP number/);
+        assert(redirectStub.notCalled)
+        assert(mockNext.notCalled)
+    })
+
+    it(`When ACSP number is 'undefined', throw error`, () => {
+        const mockRequest = generateRequest()
+        acspOpts.acspNumber = 'undefined';
+        assert.throws(() => acspManageUsersAuthMiddleware(opts, acspOpts)(mockRequest, mockResponse, mockNext), /invalid ACSP number/);
+        assert(redirectStub.notCalled)
+        assert(mockNext.notCalled)
+    })
+
+    it(`Should call redirect when user does not have correct permissions`, () => {
+        const mockRequest = generateRequest()
+        acspManageUsersAuthMiddleware(opts, acspOpts)(mockRequest, mockResponse, mockNext)
+        assert(redirectStub.calledOnceWith(mockReturnUrlWithScope))
+        assert(mockNext.notCalled)
+    })
+
+    it(`Should call next when user has correct permissions`, () => {
+        const sessionMock = mock(Session);
+        const mockRequest = generateRequest(instance(sessionMock));
+        const signInInfo = {
+            signed_in: 1,
+            user_profile: {
+                id: 'mockUserId',
+                [UserProfileKeys.TokenPermissions]: {
+                    "acsp_members": "read",
+                    "acsp_number": 'abc123'
+                }
+            }
+        }
+        when(sessionMock.get<ISignInInfo>(SessionKey.SignInInfo)).thenReturn(signInInfo)
+        acspManageUsersAuthMiddleware(opts, acspOpts)(mockRequest, mockResponse, mockNext)
+        assert(mockNext.calledOnceWithExactly())
+        assert(redirectStub.notCalled)
+    })
 })

@@ -33,5 +33,4 @@ export const acspManageUsersAuthMiddleware = (options: AuthOptions, acspOptions:
     logger.debug(`${LOG_MESSAGE_APP_NAME} - Auth acspManageUsers`)
 
     return authMiddlewareHelper(authMiddlewareConfig, getAcspManageUserScopesAndPermissions(acspOptions))(req, res, next);
-
 }

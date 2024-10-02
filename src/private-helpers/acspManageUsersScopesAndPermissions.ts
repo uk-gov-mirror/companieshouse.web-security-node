@@ -1,10 +1,10 @@
 import { AcspOptions, UserRole } from "../scopes-permissions/acspManageUsersAuthMiddleware"
 import { RequestScopeAndPermissions } from './RequestScopeAndPermissions'
 
-
 /*  Returns the scopes and permissions required for ACSP members.
     It a role is not provided in acspOptions, the default acsp_members read permission
-    is returned. This is the equilivant of standard user permissions.
+    is returned. This is the equilivant of standard user permissions, all ACSP members should 
+    have this.
 */
 
 export const getAcspManageUserScopesAndPermissions = (acspOptions: AcspOptions): RequestScopeAndPermissions => {
@@ -33,7 +33,7 @@ export const getAcspManageUserScopesAndPermissions = (acspOptions: AcspOptions):
                 acsp_number: acspNumber
             }
         }
-    }  
+    }
     return {
         scope,
         tokenPermissions: {
