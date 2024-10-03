@@ -1,8 +1,8 @@
 import { NextFunction, Request, RequestHandler, Response } from 'express'
 import { AuthOptions } from '..'
+import { RequestScopeAndPermissions } from '../private-helpers/RequestScopeAndPermissions'
 import { authMiddlewareHelper } from '../private-helpers/authMiddlewareHelper'
 import { logger, LOG_MESSAGE_APP_NAME } from '../private-helpers/createLogger'
-import { RequestScopeAndPermissions } from 'app/private-helpers/RequestScopeAndPermissions'
 import { InvalidAcspNumberError } from './errors'
 
 export const acspManageUsersAuthMiddleware = (options: AuthOptions): RequestHandler => (
@@ -10,7 +10,7 @@ export const acspManageUsersAuthMiddleware = (options: AuthOptions): RequestHand
     res: Response,
     next: NextFunction
 ) => {
-    const { acspNumber } =  options;
+    const { acspNumber } = options
     const authMiddlewareConfig: AuthOptions = {
         chsWebUrl: options.chsWebUrl,
         returnUrl: options.returnUrl,
