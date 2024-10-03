@@ -28,11 +28,7 @@ export function additionalScopeIsRequired(requestScopeAndPermissions: RequestSco
     logger.info(`${LOG_MESSAGE_APP_NAME} userId=${userId}, UserProfile Token Permissions property has null value`)
     return true;
   }
-  console.log("this is what we are checking")
-  console.log('scopes - ', requestScopeAndPermissions.tokenPermissions)
   // check each requested key is in the user profile
-console.log('actual users things are here ')
-console.log('token permissions', userProfileTokenPermissions)
 
   for (const key in requestScopeAndPermissions.tokenPermissions) {
 

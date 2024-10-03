@@ -6,13 +6,13 @@ import { SessionKey } from '@companieshouse/node-session-handler/lib/session/key
 import { UserProfileKeys } from '@companieshouse/node-session-handler/lib/session/keys/UserProfileKeys'
 import { ISignInInfo } from '@companieshouse/node-session-handler/lib/session/model/SessionInterfaces'
 import { instance, mock, when } from 'ts-mockito'
-import { AuthOptions, AcspOptions } from '../../src'
+import { AuthOptions } from '../../src'
 import { acspManageUsersAuthMiddleware } from '../../src/scopes-permissions'
 import {
     generateRequest,
     generateResponse
 } from '../mockGeneration'
-import { UserRoles } from '../../src/scopes-permissions/acspManageUsersAuthMiddleware'
+import { InvalidAcspNumberError } from '../../src/scopes-permissions'
 
 describe('Test acspManageUsersAuthMiddleware options', () => {
 
@@ -20,7 +20,6 @@ describe('Test acspManageUsersAuthMiddleware options', () => {
 
     let redirectStub: sinon.SinonStub
     let opts: AuthOptions
-    let acspOpts: AcspOptions
     let mockResponse: Response
     let mockNext: sinon.SinonStub
 
@@ -29,10 +28,7 @@ describe('Test acspManageUsersAuthMiddleware options', () => {
         opts = {
             returnUrl: 'origin',
             chsWebUrl: 'accounts',
-        }
-        acspOpts = {
             acspNumber: 'abc123',
-            userRole: UserRoles.STANDARD
         }
         mockResponse = generateResponse()
         mockResponse.redirect = redirectStub
@@ -41,31 +37,30 @@ describe('Test acspManageUsersAuthMiddleware options', () => {
 
     it('When there is no session and acspManageUsersAuthMiddleware, the middleware should not call next and should trigger redirect with additional scope', () => {
         const mockRequest = generateRequest()
-        acspManageUsersAuthMiddleware(opts, acspOpts)(mockRequest, mockResponse, mockNext)
+        acspManageUsersAuthMiddleware(opts)(mockRequest, mockResponse, mockNext)
         assert(redirectStub.calledOnceWith(mockReturnUrlWithScope))
         assert(mockNext.notCalled)
     })
 
     it(`When ACSP number is blank, throw error`, () => {
         const mockRequest = generateRequest()
-        acspOpts.acspNumber = '';
-
-        assert.throws(() => acspManageUsersAuthMiddleware(opts, acspOpts)(mockRequest, mockResponse, mockNext), /invalid ACSP number/);
+        opts.acspNumber = '';
+        assert.throws(()=> acspManageUsersAuthMiddleware(opts)(mockRequest, mockResponse, mockNext), InvalidAcspNumberError);
         assert(redirectStub.notCalled)
         assert(mockNext.notCalled)
     })
 
     it(`When ACSP number is 'undefined', throw error`, () => {
         const mockRequest = generateRequest()
-        acspOpts.acspNumber = 'undefined';
-        assert.throws(() => acspManageUsersAuthMiddleware(opts, acspOpts)(mockRequest, mockResponse, mockNext), /invalid ACSP number/);
+        opts.acspNumber = 'undefined';
+        assert.throws(() => acspManageUsersAuthMiddleware(opts)(mockRequest, mockResponse, mockNext), InvalidAcspNumberError);
         assert(redirectStub.notCalled)
         assert(mockNext.notCalled)
     })
 
     it(`Should call redirect when user does not have correct permissions`, () => {
         const mockRequest = generateRequest()
-        acspManageUsersAuthMiddleware(opts, acspOpts)(mockRequest, mockResponse, mockNext)
+        acspManageUsersAuthMiddleware(opts)(mockRequest, mockResponse, mockNext)
         assert(redirectStub.calledOnceWith(mockReturnUrlWithScope))
         assert(mockNext.notCalled)
     })
@@ -84,7 +79,7 @@ describe('Test acspManageUsersAuthMiddleware options', () => {
             }
         }
         when(sessionMock.get<ISignInInfo>(SessionKey.SignInInfo)).thenReturn(signInInfo)
-        acspManageUsersAuthMiddleware(opts, acspOpts)(mockRequest, mockResponse, mockNext)
+        acspManageUsersAuthMiddleware(opts)(mockRequest, mockResponse, mockNext)
         assert(mockNext.calledOnceWithExactly())
         assert(redirectStub.notCalled)
     })

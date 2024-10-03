@@ -9,6 +9,7 @@ export interface AuthOptions {
   returnUrl: string
   chsWebUrl: string
   companyNumber?: string
+  acspNumber?:string
 }
 
 export const authMiddleware = (options: AuthOptions): RequestHandler => (

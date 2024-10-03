@@ -4,5 +4,8 @@ export {
 
 export {
     acspManageUsersAuthMiddleware,
-    AcspOptions
 } from './acspManageUsersAuthMiddleware'
+
+export {
+   InvalidAcspNumberError
+} from './errors'

@@ -1,38 +1,37 @@
 import { NextFunction, Request, RequestHandler, Response } from 'express'
 import { AuthOptions } from '..'
-import { getAcspManageUserScopesAndPermissions } from '../private-helpers/acspManageUsersScopesAndPermissions'
 import { authMiddlewareHelper } from '../private-helpers/authMiddlewareHelper'
 import { logger, LOG_MESSAGE_APP_NAME } from '../private-helpers/createLogger'
+import { RequestScopeAndPermissions } from 'app/private-helpers/RequestScopeAndPermissions'
+import { InvalidAcspNumberError } from './errors'
 
-export const UserRoles = {
-    OWNER : 'owner',
-    ADMIN : 'admin',
-    STANDARD : 'standard'
-} as const
-
-export type UserRole = (typeof UserRoles)[keyof typeof UserRoles];
-
-export interface AcspOptions {
-    userRole?: UserRole,
-    acspNumber: string
-}
-
-export const acspManageUsersAuthMiddleware = (options: AuthOptions, acspOptions: AcspOptions): RequestHandler => (
+export const acspManageUsersAuthMiddleware = (options: AuthOptions): RequestHandler => (
     req: Request,
     res: Response,
     next: NextFunction
 ) => {
-
+    const { acspNumber } =  options;
     const authMiddlewareConfig: AuthOptions = {
         chsWebUrl: options.chsWebUrl,
         returnUrl: options.returnUrl,
+        acspNumber
     }
 
-    if (!acspOptions.acspNumber?.length || acspOptions.acspNumber === 'undefined') {
+    if (typeof acspNumber !== 'string' || !acspNumber?.length || acspNumber === 'undefined') {
         logger.error(`${LOG_MESSAGE_APP_NAME} - acspManageUsersAuthMiddleware: Acsp Number invalid`)
-        throw new Error('invalid ACSP number')
+        throw new InvalidAcspNumberError(`invalid ACSP number - ${acspNumber}`)
     }
+
+    const acspManageUsersRequestScopeAndPermissions: RequestScopeAndPermissions = {
+        scope: `https://api.company-information.service.gov.uk/authorized-corporate-service-provider/${acspNumber}`,
+        tokenPermissions: {
+            'acsp_members': 'read',
+            acsp_number: acspNumber
+        }
+    }
+
     logger.debug(`${LOG_MESSAGE_APP_NAME} - Auth acspManageUsers`)
 
-    return authMiddlewareHelper(authMiddlewareConfig, getAcspManageUserScopesAndPermissions(acspOptions))(req, res, next)
+    return authMiddlewareHelper(authMiddlewareConfig, acspManageUsersRequestScopeAndPermissions)(req, res, next)
+
 }
