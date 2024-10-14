@@ -67,6 +67,12 @@ export interface CsrfOptions {
      * Name of the field in the request body for the CSRF token
      */
     parameterName?: string
+
+    /**
+     * When set to true will expect there to be a Cookie referencing the
+     * Session. When false it will perform no further processing.
+     */
+    errorWhenNoSessionCookie?: boolean
 }
 
 /**
@@ -109,6 +115,8 @@ const csrfFilter = (options: CsrfOptions): RequestHandler => {
             const parameterName = options.parameterName || DEFAULT_CSRF_TOKEN_PARAMETER_NAME
             const csrfTokenFactory = options.csrfTokenFactory || defaultCsrfTokenFactory
             const cookieName = options.sessionCookieName || DEFAULT_CHS_SESSION_COOKIE_NAME
+            const errorWhenNoSessionCookie = options.errorWhenNoSessionCookie || false
+
 
             const sessionCsrfToken = req.session.get<string>(SessionKey.CsrfToken)
 
@@ -117,6 +125,17 @@ const csrfFilter = (options: CsrfOptions): RequestHandler => {
             const applyCsrfTokenToLocals = (csrfTokenToUse: string) => res.locals.csrfToken = csrfTokenToUse
 
             if (MUTABLE_METHODS.includes(req.method)) {
+                if (typeof req.cookies[cookieName] === 'undefined') {
+                    const noSessionCookieError = errorWhenNoSessionCookie
+                        ? new SessionUnsetError('Performing mutable request and no Session Cookie present')
+                        : undefined
+
+                    logger.error('Request does not have cookie present and ' +
+                            'performing a mutable request. Not performing further validation.')
+
+                    return next(noSessionCookieError)
+                }
+
                 // When the request is for a method which likely mutates the
                 // state of the application check that it is possible
                 // to perform the check and check the tokens match
@@ -134,7 +153,7 @@ const csrfFilter = (options: CsrfOptions): RequestHandler => {
                 }
 
                 applyCsrfTokenToLocals(sessionCsrfToken)
-            } else if (!sessionCsrfToken) {
+            } else if (!sessionCsrfToken && typeof req.cookies[cookieName] !== 'undefined') {
                 if (options.createWhenCsrfTokenAbsent !== false) {
                     // When there is no CSRF token in the CHS session and the options
                     // generate a new token and store in the session
@@ -155,7 +174,7 @@ const csrfFilter = (options: CsrfOptions): RequestHandler => {
                 } else {
                     throw new MissingCsrfSessionToken('CSRF token not found in session.')
                 }
-            } else  {
+            } else if (sessionCsrfToken) {
                 applyCsrfTokenToLocals(sessionCsrfToken)
             }
 

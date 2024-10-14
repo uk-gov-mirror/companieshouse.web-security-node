@@ -194,6 +194,13 @@ Provides configuration to the middleware.
   `X-CSRF-TOKEN`
 - `parameterName` (*string*) - name of the parameter in the request body to
   check. Defaults to `_csrf`.
+- `errorWhenNoSessionCookie` (*boolean*) - defines the behaviour when a mutable
+  request is received without a session cookie. When true will raise an error
+  when the request does not contain a Cookie with Session ID, when false will
+  do nothing and call next handler without an error (assuming this will be
+  handled separately). This likely will be handled in a different handler
+  therefore should not expect there to be a CSRF token
+  to validate the request against. Defaults to `false`.
 
 #### `CsrfProtectionMiddleware` function
 
