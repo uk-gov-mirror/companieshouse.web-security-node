@@ -126,15 +126,15 @@ const csrfFilter = (options: CsrfOptions): RequestHandler => {
             const applyCsrfTokenToLocals = (csrfTokenToUse: string) => res.locals.csrfToken = csrfTokenToUse
 
             if (MUTABLE_METHODS.includes(req.method)) {
-                if (!hasSessionCookie) {
-                    const noSessionCookieError = errorWhenNoSessionCookie
-                        ? new SessionUnsetError('Performing mutable request and no Session Cookie present')
-                        : undefined
+                if (!hasSessionCookie && errorWhenNoSessionCookie) {
+                    logger.error('Request does not have cookie present.')
 
-                    logger.error('Request does not have cookie present and ' +
-                            'performing a mutable request. Not performing further validation.')
+                    return next(new SessionUnsetError('Performing mutable request and no Session Cookie present'))
+                } else if (!hasSessionCookie) {
+                    logger.info('WARNING: Request does not have cookie present and ' +
+                        'performing a mutable request. Not performing further validation.')
 
-                    return next(noSessionCookieError)
+                    return next()
                 }
 
                 // When the request is for a method which likely mutates the
