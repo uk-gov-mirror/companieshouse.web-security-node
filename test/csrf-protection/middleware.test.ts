@@ -23,6 +23,8 @@ describe("csrf-protection/middleware", () => {
         const newCsrfToken = "497a33e7-47be-4508-bf9d-0dd087fcf53b"
 
         beforeEach(() => {
+            sinon.restore()
+            sinon.reset()
             redirectStub = sinon.stub()
             sessionStore = mock(SessionStore)
             opts = {
@@ -45,6 +47,9 @@ describe("csrf-protection/middleware", () => {
             const csrfToken = "0fb9a779-2262-410f-a075-7f1359f142b6";
             const sessionMock = mock(Session);
             const mockRequest = generateRequest(instance(sessionMock), csrfToken, undefined, "POST");
+            mockRequest.cookies = {
+                "_SID": cookie.value
+            }
 
             when(sessionMock.get<string>(SessionKey.CsrfToken)).thenReturn(csrfToken);
 
@@ -57,6 +62,9 @@ describe("csrf-protection/middleware", () => {
             const csrfToken = "0fb9a779-2262-410f-a075-7f1359f142b6";
             const sessionMock = mock(Session);
             const mockRequest = generateRequest(instance(sessionMock), undefined, csrfToken, "POST");
+            mockRequest.cookies = {
+                "_SID": cookie.value
+            }
 
             when(sessionMock.get<string>(SessionKey.CsrfToken)).thenReturn(csrfToken);
 
@@ -69,6 +77,9 @@ describe("csrf-protection/middleware", () => {
             const csrfToken = "0fb9a779-2262-410f-a075-7f1359f142b6";
             const sessionMock = mock(Session);
             const mockRequest = generateRequest(instance(sessionMock), "58ff006d-8c3c-4590-aa3c-c7c594fb422e", undefined, "POST");
+            mockRequest.cookies = {
+                "_SID": cookie.value
+            }
 
             when(sessionMock.get<string>(SessionKey.CsrfToken)).thenReturn(csrfToken);
 
@@ -81,6 +92,9 @@ describe("csrf-protection/middleware", () => {
             const csrfToken = "0fb9a779-2262-410f-a075-7f1359f142b6";
             const sessionMock = mock(Session);
             const mockRequest = generateRequest(instance(sessionMock), undefined, "58ff006d-8c3c-4590-aa3c-c7c594fb422e", "POST");
+            mockRequest.cookies = {
+                "_SID": cookie.value
+            }
 
             when(sessionMock.get<string>(SessionKey.CsrfToken)).thenReturn(csrfToken);
 
@@ -102,6 +116,9 @@ describe("csrf-protection/middleware", () => {
             const csrfToken = "0fb9a779-2262-410f-a075-7f1359f142b6";
             const sessionMock = mock(Session);
             const mockRequest = generateRequest(instance(sessionMock), "e1f1ba25-e129-490c-9675-47805b878dcd", csrfToken, "POST");
+            mockRequest.cookies = {
+                "_SID": cookie.value
+            }
 
             when(sessionMock.get<string>(SessionKey.CsrfToken)).thenReturn(csrfToken);
 
@@ -224,6 +241,9 @@ describe("csrf-protection/middleware", () => {
             const csrfToken = "0fb9a779-2262-410f-a075-7f1359f142b6";
             const sessionMock = mock(Session);
             const mockRequest = generateRequest(instance(sessionMock), "e1f1ba25-e129-490c-9675-47805b878dcd", csrfToken, "POST");
+            mockRequest.cookies = {
+                "_SID": cookie.value
+            }
 
             when(sessionMock.get<string>(SessionKey.CsrfToken)).thenReturn(csrfToken);
 
@@ -278,6 +298,127 @@ describe("csrf-protection/middleware", () => {
             assert(mockNext.calledWithMatch(sinon.match((error) => error instanceof CsrfError)))
         })
 
+        /*
+        The following tests use a separate stub for next function as sinon was
+        not working as expected - it was causing false positives therefore using
+        a custom stub which collects the calls manually and performs assertions
+        on them
+        */
+
+        it("does nothing if there is a session and no cookie in the request", () => {
+            const sessionMock = mock(Session);
+            const mockRequest = generateRequest(instance(sessionMock));
+            mockRequest.cookies = {}
+
+            when(sessionMock.data).thenReturn({
+                [SessionKey.Expires]: 1223123454
+            })
+
+            // Array of calls to next
+            let nextCalls: any[] = [];
+
+            // stubbed next which adds the call args to next to the nextCalls array
+            const nextStub = (err?: any) => {
+                console.warn(`Called with ${err}`)
+
+                nextCalls = [
+                    ...nextCalls,
+                    err
+                ]
+            }
+
+            // @ts-ignore
+            opts.sessionStore.expects("store").never();
+
+            CsrfProtectionMiddleware({
+                ...(opts),
+                createWhenCsrfTokenAbsent: true,
+                sessionStore: sessionStore
+            })(mockRequest, mockResponse, nextStub)
+
+            sinon.verify()
+
+            assert(nextCalls.length === 1, "next has been called once");
+            assert(typeof nextCalls[0] === "undefined", "next has been called with no args");
+        })
+
+        it("does not error when POST with no session cookie and errorWhenNoSessionCookie is false", () => {
+            const sessionMock = mock(Session);
+            const mockRequest = generateRequest(instance(sessionMock), undefined, undefined, "POST");
+            mockRequest.cookies = {}
+
+            when(sessionMock.data).thenReturn({
+                [SessionKey.Expires]: 1223123454
+            })
+
+            // Array of calls to next
+            let nextCalls: any[] = [];
+
+            // stubbed next which adds the call args to next to the nextCalls array
+            const nextStub = (err?: any) => {
+                console.warn(`Called with ${err}`)
+
+                nextCalls = [
+                    ...nextCalls,
+                    err
+                ]
+            }
+
+            // @ts-ignore
+            opts.sessionStore.expects("store").never();
+
+            CsrfProtectionMiddleware({
+                ...(opts),
+                createWhenCsrfTokenAbsent: true,
+                sessionStore: sessionStore,
+                errorWhenNoSessionCookie: false
+            })(mockRequest, mockResponse, nextStub)
+
+            assert(nextCalls.length === 1, "next has been called once");
+            assert(typeof nextCalls[0] === "undefined", "next has been called with no args");
+            
+            sinon.verify()
+        })
+
+        it("errors when POST with no session cookue and errorWhenNoSessionCookie is true", () => {
+            const sessionMock = mock(Session);
+            const mockRequest = generateRequest(instance(sessionMock), undefined, undefined, "POST");
+            mockRequest.cookies = {}
+
+            when(sessionMock.data).thenReturn({
+                [SessionKey.Expires]: 1223123454
+            })
+
+            // Array of calls to next
+            let nextCalls: any[] = [];
+
+            // stubbed next which adds the call args to next to the nextCalls array
+            const nextStub = (err?: any) => {
+                console.warn(`Called with ${err}`)
+
+                nextCalls = [
+                    ...nextCalls,
+                    err
+                ]
+            }
+
+            // @ts-ignore
+            opts.sessionStore.expects("store").never();
+
+            CsrfProtectionMiddleware({
+                ...(opts),
+                createWhenCsrfTokenAbsent: true,
+                sessionStore: sessionStore,
+                errorWhenNoSessionCookie: true
+            })(mockRequest, mockResponse, nextStub)
+
+            assert(nextCalls.length === 1, "next has been called once");
+            assert(nextCalls[0] instanceof SessionUnsetError, "next Called with CsrfError");
+
+            sinon.verify()
+        })
+
+
         describe("custom header", () => {
             it("can locate csrf token in custom header", () => {
                 const csrfToken = "0fb9a779-2262-410f-a075-7f1359f142b6";
@@ -288,6 +429,9 @@ describe("csrf-protection/middleware", () => {
 
                 mockRequest.headers[customHeaderName] = csrfToken;
                 mockRequest.method = "POST";
+                mockRequest.cookies = {
+                    "_SID": cookie.value
+                }
 
                 when(sessionMock.get<string>(SessionKey.CsrfToken)).thenReturn(csrfToken);
 
@@ -313,6 +457,9 @@ describe("csrf-protection/middleware", () => {
                 mockRequest.method = "POST";
                 mockRequest.body = {
                     [customParameterName]: csrfToken
+                }
+                mockRequest.cookies = {
+                    "_SID": cookie.value
                 }
 
                 when(sessionMock.get<string>(SessionKey.CsrfToken)).thenReturn(csrfToken);
@@ -351,6 +498,10 @@ describe("csrf-protection/middleware", () => {
             const csrfToken = "0fb9a779-2262-410f-a075-7f1359f142b6";
             const sessionMock = mock(Session);
             const mockRequest = generateRequest(instance(sessionMock), undefined, undefined, "POST");
+
+            mockRequest.cookies = {
+                "_SID": "123234344545"
+            }
 
             when(sessionMock.get<string>(SessionKey.CsrfToken)).thenReturn(csrfToken);
 
