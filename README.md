@@ -54,7 +54,8 @@ token. This implements a
     import { CsrfProtectionMiddleware } from " @companieshouse/web-security-node"
     import {
         SessionStore,
-        SessionMiddleware
+        SessionMiddleware,
+        EnsureSessionCookiePresentMiddleware
     } from '@companieshouse/node-session-handler';
     import express from "express";
     import cookieParser from 'cookie-parser';
@@ -85,6 +86,10 @@ token. This implements a
         sessionCookieName: cookieName
     }
     app.use(createLoggerMiddleware(config.applicationNamespace));
+
+    // Recommended to use the EnsureSessionCookiePresentMiddleware from
+    // `node-session-handler` too - see subsequent note
+    app.use(EnsureSessionCookiePresentMiddleware(cookieConfig))
     
     // It is important that CSRF Protection follows the Sesion and urlencoded
     // Middlewares, maybe put at end of the middleware chain (before
@@ -95,6 +100,13 @@ token. This implements a
     // Add other middlewares and routers
 
     ```
+
+    **Note** the addition of: `EnsureSessionCookiePresentMiddleware` ensures
+    that there is a session cookie in the request before handling the CSRF
+    token. This is important because the CSRF middleware cannot add the CSRF to
+    the session without a session cookie. Without this step any mutable requests
+    following an unauthenticated action will fail. If your application is only
+    authenticated this may not be as applicable.
 
 3. Amend the `Nunjucks` configuration to add the third-party templates from this library:
 
