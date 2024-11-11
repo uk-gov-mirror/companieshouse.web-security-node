@@ -26,7 +26,7 @@ test:
 	npm run test
 
 .PHONY: sonar
-sonar:
+sonar: test
 	npm run sonarqube
 
 .PHONY: package
