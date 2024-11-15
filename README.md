@@ -39,6 +39,14 @@ token. This implements a
 > you will will need to send the CSRF token as a header, by default: this is
 > the header `x-csrf-token` but can be customised using the options.
 
+> [!WARNING]
+> Depending on how your application validates requests you may need to register
+> the new attribute `_csrf` with your validation framework.
+> `registered-email-address-web` uses the `joi` framework which required it
+> [being registered in its schema](https://github.com/companieshouse/registered-email-address-web/blob/main/src/schemas/change_email_address_schema.ts).
+> Take care when implementing that you understand what impact the new attribute
+> will have on your handling of forms.
+
 ### Installation instructions
 
 1. Install the library (if not already installed).
