@@ -10,6 +10,7 @@ import { RequestScopeAndPermissions } from './RequestScopeAndPermissions'
 import { additionalScopeIsRequired }  from './additionalScopeIsRequired'
 import { logger, LOG_MESSAGE_APP_NAME } from './createLogger'
 
+/* tslint:disable-next-line */
 export const authMiddlewareHelper = (options: AuthOptions, requestScopeAndPermissions?: RequestScopeAndPermissions): RequestHandler => (
     req: Request,
     res: Response,
@@ -43,7 +44,7 @@ export const authMiddlewareHelper = (options: AuthOptions, requestScopeAndPermis
     const signedIn: boolean = signInInfo![SignInInfoKeys.SignedIn] === 1
     const userProfile: IUserProfile = signInInfo![SignInInfoKeys.UserProfile] || {}
     const userId: string | undefined = userProfile?.id
-    const hijackFilter: string = req.session?.data[SessionKey.Hijacked] ?? "0";
+    const hijackFilter: string = req.session?.data[SessionKey.Hijacked] ?? '0'
     const clientSignature: string = req.session?.data[SessionKey.ClientSig] ?? ''
     const computedSignature: string = computeSignatureFromRequest(req)
 
@@ -54,7 +55,7 @@ export const authMiddlewareHelper = (options: AuthOptions, requestScopeAndPermis
     console.log(`cidev-test > req.session.data`)
     console.log(req?.session?.data)
 
-    if (parseInt(hijackFilter) === 1) {
+    if (parseInt(hijackFilter, 10) === 1) {
       return res.redirect(redirectURI)
     }
 
