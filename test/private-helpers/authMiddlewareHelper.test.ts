@@ -50,7 +50,7 @@ describe('Test tokenPermissions conditionals in authMiddleware', () => {
     mockResponse.redirect = redirectStub
     mockNext = sinon.stub()
   })
-  
+
   it('When there is no session and requestScopeAndPermissions, the middleware should not call next and should trigger redirect with additional scope', () => {
 
     const mockRequest = generateRequest()
@@ -60,12 +60,11 @@ describe('Test tokenPermissions conditionals in authMiddleware', () => {
     assert(mockNext.notCalled)
   })
 
-    
   it('When the user is not logged in the middleware and requestScopeAndPermissions should not call next and should trigger redirect with additional scope', () => {
     const unAuthedSession = mock(Session)
-    const mockRequest = generateRequest(instance(unAuthedSession))
+    // @ts-ignore
+    const mockRequest = generateRequest({ ...instance(unAuthedSession), data: {} })
     const result = generateSignInInfoAuthedForScope(mockUserId, 0, "test_scope");
-    
 
     when(unAuthedSession.get<ISignInInfo>(SessionKey.SignInInfo)).thenReturn(result)
     authMiddlewareHelper(opts, testRequestScopeAndPermissions)(mockRequest, mockResponse, mockNext)
@@ -76,7 +75,8 @@ describe('Test tokenPermissions conditionals in authMiddleware', () => {
 
   it('When the user is signed in but does in UserProfile not have the privileges in testRequestScopeAndPermissions the middleware should not call next and should trigger redirect', () => {
     const authedSession = mock(Session)
-    const mockRequest = generateRequest(instance(authedSession))
+    // @ts-ignore
+    const mockRequest = generateRequest({ ...instance(authedSession), data: {} })
 
     when(authedSession.get<ISignInInfo>(SessionKey.SignInInfo)).thenReturn(generateSignInInfo(mockUserId, 1))
     authMiddlewareHelper(opts, testRequestScopeAndPermissions)(mockRequest, mockResponse, mockNext)
@@ -86,7 +86,8 @@ describe('Test tokenPermissions conditionals in authMiddleware', () => {
 
   it('When the user is signed in and does in UserProfile have the privileges in testRequestScopeAndPermissions the middleware should  call next', () => {
     const authedSession = mock(Session)
-    const mockRequest = generateRequest(instance(authedSession))
+    // @ts-ignore
+    const mockRequest = generateRequest({ ...instance(authedSession), data: {} })
 
     when(authedSession.get<ISignInInfo>(SessionKey.SignInInfo)).thenReturn(generateSignInInfoWithTokenPermissions(mockUserId, 1))
     authMiddlewareHelper(opts, testRequestScopeAndPermissions)(mockRequest, mockResponse, mockNext)

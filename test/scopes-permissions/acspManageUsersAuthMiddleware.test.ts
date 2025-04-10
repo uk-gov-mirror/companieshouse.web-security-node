@@ -67,7 +67,8 @@ describe('Test acspManageUsersAuthMiddleware options', () => {
 
     it(`Should call next when user has correct permissions`, () => {
         const sessionMock = mock(Session);
-        const mockRequest = generateRequest(instance(sessionMock));
+        // @ts-ignore
+        const mockRequest = generateRequest({ ...instance(sessionMock), data: {} });
         const signInInfo = {
             signed_in: 1,
             user_profile: {

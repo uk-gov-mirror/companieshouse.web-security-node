@@ -37,21 +37,32 @@ export function generateSignInInfoWithTokenPermissions(mockUserId: string, signe
 }
 
 
-export function generateSignInInfoAuthedForCompany(mockUserId: string,
-                                                   signedIn: number, companyNumber: string): ISignInInfo {
+export function generateSignInInfoAuthedForCompany(
+    mockUserId: string,
+    signedIn: number,
+    companyNumber: string
+): ISignInInfo {
   const signInInfo: ISignInInfo = generateSignInInfo(mockUserId, signedIn)
   signInInfo[SignInInfoKeys.CompanyNumber] = companyNumber
   return signInInfo
 }
 
-export function generateSignInInfoAuthedForScope(mockUserId: string,
-                                                 signedIn: number, additionScope: string): ISignInInfo {
+export function generateSignInInfoAuthedForScope(
+    mockUserId: string,
+    signedIn: number,
+    additionScope: string
+): ISignInInfo {
   const signInInfo: ISignInInfo = generateSignInInfo(mockUserId, signedIn)
-  signInInfo[SignInInfoKeys.AdditionalScope] =  additionScope
+  signInInfo[SignInInfoKeys.AdditionalScope] = additionScope
   return signInInfo
 }
 
-export function generateRequest(requestSession?: Session, csrfTokenInHeader?: string, csrfTokenInBody?: string, method: 'GET' | 'POST' | "DELETE" = "GET"): Request {
+export function generateRequest(
+    requestSession?: Session,
+    csrfTokenInHeader?: string,
+    csrfTokenInBody?: string,
+    method: 'GET' | 'POST' | "DELETE" = "GET"
+): Request {
   const headers = {
     ...(
       csrfTokenInHeader
@@ -77,7 +88,11 @@ export function generateRequest(requestSession?: Session, csrfTokenInHeader?: st
 
   if (requestSession) {
     request.session = requestSession
+    if (requestSession.data) {
+      request.session.data = {
+        ".client.signature": "10e6f100d91411524c240cf0ca297585fa268ed1"
+      }
+    }
   }
-
   return request
 }
