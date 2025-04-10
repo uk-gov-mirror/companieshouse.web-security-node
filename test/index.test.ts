@@ -74,7 +74,7 @@ describe('Authentication Middleware', () => {
 })
 
 describe('Authentication Middleware with company number', () => {
-  
+
   const mockReturnUrl = 'accounts/signin?return_to=origin&company_number=12345678'
   const mockUserId = 'sA=='
 
