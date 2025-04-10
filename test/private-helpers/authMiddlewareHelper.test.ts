@@ -1,13 +1,14 @@
-import { Session} from '@companieshouse/node-session-handler'
-import { SessionKey } from '@companieshouse/node-session-handler/lib/session/keys/SessionKey'
-import { ISignInInfo } from '@companieshouse/node-session-handler/lib/session/model/SessionInterfaces'
-import { assert } from 'chai'
 import { Response } from 'express'
 import sinon from 'sinon'
 import { instance, mock, when } from 'ts-mockito'
+import { assert } from 'chai'
+import { Session} from '@companieshouse/node-session-handler'
+import { SessionKey } from '@companieshouse/node-session-handler/lib/session/keys/SessionKey'
+import { ISignInInfo } from '@companieshouse/node-session-handler/lib/session/model/SessionInterfaces'
 import { AuthOptions } from '../../src'
 import { authMiddlewareHelper } from '../../src/private-helpers/authMiddlewareHelper'
 import { RequestScopeAndPermissions } from '../../src/private-helpers/RequestScopeAndPermissions'
+
 import {
   generateRequest,
   generateResponse,
@@ -38,7 +39,6 @@ describe('Test tokenPermissions conditionals in authMiddleware', () => {
     opts = {
       returnUrl: 'origin',
       chsWebUrl: 'accounts',
-
     }
     testRequestScopeAndPermissions = {
         scope: "test_scope",
@@ -49,6 +49,23 @@ describe('Test tokenPermissions conditionals in authMiddleware', () => {
     mockResponse = generateResponse()
     mockResponse.redirect = redirectStub
     mockNext = sinon.stub()
+  })
+
+  it('When hijack filter is set, should trigger redirect to sign in page', () => {
+
+    const authedSession = mock(Session)
+    // @ts-ignore
+    const mockRequest = generateRequest({
+      ...instance(authedSession),
+      data: {
+        [SessionKey.Hijacked]: "1"
+      }
+    })
+
+    when(authedSession.get<ISignInInfo>(SessionKey.SignInInfo)).thenReturn(generateSignInInfo(mockUserId, 1))
+    authMiddlewareHelper(opts, testRequestScopeAndPermissions)(mockRequest, mockResponse, mockNext)
+    assert(redirectStub.calledOnce)
+    assert(mockNext.notCalled)
   })
 
   it('When there is no session and requestScopeAndPermissions, the middleware should not call next and should trigger redirect with additional scope', () => {
@@ -94,5 +111,21 @@ describe('Test tokenPermissions conditionals in authMiddleware', () => {
     assert(mockNext.calledOnce)
   })
 
+  it('When the user is signed in bur client signature is not equal to computed signature, should trigger redirect to sign in page', () => {
+
+    const authedSession = mock(Session)
+    // @ts-ignore
+    const mockRequest = generateRequest({
+      ...instance(authedSession),
+      data: {
+        [SessionKey.ClientSig]: "abc123"
+      }
+    })
+
+    when(authedSession.get<ISignInInfo>(SessionKey.SignInInfo)).thenReturn(generateSignInInfo(mockUserId, 1))
+    authMiddlewareHelper(opts, testRequestScopeAndPermissions)(mockRequest, mockResponse, mockNext)
+    assert(redirectStub.calledOnce)
+    assert(mockNext.notCalled)
+  })
 
 })
