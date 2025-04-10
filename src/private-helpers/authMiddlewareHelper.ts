@@ -43,24 +43,30 @@ export const authMiddlewareHelper = (options: AuthOptions, requestScopeAndPermis
     const signedIn: boolean = signInInfo![SignInInfoKeys.SignedIn] === 1
     const userProfile: IUserProfile = signInInfo![SignInInfoKeys.UserProfile] || {}
     const userId: string | undefined = userProfile?.id
+    const hijackFilter: string = req.session?.data[SessionKey.Hijacked] ?? "0";
     const clientSignature: string = req.session?.data[SessionKey.ClientSig] ?? ''
     const computedSignature: string = computeSignatureFromRequest(req)
 
     // debuggers for CIDEV only
+    console.log(`cidev-test > hijackFilter: ${hijackFilter}`)
     console.log(`cidev-test > clientSignature: ${clientSignature}`)
     console.log(`cidev-test > computedSignature: ${computedSignature}`)
     console.log(`cidev-test > req.session.data`)
     console.log(req?.session?.data)
 
-     if (signedIn) {
-       if (computedSignature !== clientSignature) { // possible hijack detected
-         // @ts-ignore
-         req.session.data[`${SessionKey.ClientSig}`] = computedSignature
-         if (clientSignature.length) {
-           return res.redirect(redirectURI)
-         }
-       }
-     }
+    if (parseInt(hijackFilter) === 1) {
+      return res.redirect(redirectURI)
+    }
+
+    if (signedIn) {
+      if (computedSignature !== clientSignature) { // possible hijack detected
+        // @ts-ignore
+        req.session.data[`${SessionKey.ClientSig}`] = computedSignature
+        if (clientSignature.length) {
+          return res.redirect(redirectURI)
+        }
+      }
+    }
 
     if (requestScopeAndPermissions && additionalScopeIsRequired(requestScopeAndPermissions, userProfile, userId)) {
       redirectURI = redirectURI.concat(`&additional_scope=${requestScopeAndPermissions.scope}`)
