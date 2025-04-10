@@ -92,7 +92,7 @@ export function generateRequest(
     if (requestSession.data) {
       request.session.data = {
         ...request.session.data,
-        [SessionKey.ClientSig]: request.session.data[SessionKey.ClientSig] ?? "10e6f100d91411524c240cf0ca297585fa268ed1",
+        [SessionKey.ClientSig]: request.session.data[SessionKey.ClientSig] ?? "4bf3213f063e28c118f9472133420ac21f6d4041753928a7f55b1f73a5297ab417d0c5de68cfe33a7307abf64fe48dc74663cb7ad2b3bdd0e921568959ffcb48",
         [SessionKey.Hijacked]: request.session.data[SessionKey.Hijacked] ?? "0"
       }
     }
