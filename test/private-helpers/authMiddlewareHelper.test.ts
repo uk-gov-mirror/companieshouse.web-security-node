@@ -51,7 +51,7 @@ describe('Test tokenPermissions conditionals in authMiddleware', () => {
     mockNext = sinon.stub()
   })
 
-  it('When hijack filter is set, should trigger redirect to sign in page', () => {
+  it('When hijack flag is set, should trigger redirect to sign in page', () => {
 
     const authedSession = mock(Session)
     // @ts-ignore
