@@ -1,10 +1,11 @@
+import { assert, expect } from 'chai'
 import { IUserProfile } from '@companieshouse/node-session-handler/lib/session/model/SessionInterfaces'
 import { UserProfileKeys } from '@companieshouse/node-session-handler/lib/session/keys/UserProfileKeys'
-import { assert, expect } from 'chai'
 import { additionalScopeIsRequired } from '../../src/private-helpers/additionalScopeIsRequired'
 import { RequestScopeAndPermissions } from '../../src/private-helpers/RequestScopeAndPermissions'
 
 describe('Test tokenPermissionsPresent function', () => {
+
   let testRequestScopeAndPermissions: RequestScopeAndPermissions
   let userProfile: IUserProfile
 
@@ -23,12 +24,10 @@ describe('Test tokenPermissionsPresent function', () => {
         "user_orders": "create,read,update,delete",
         "acsp_profile": "create"
       }
-
     }
   })
 
     it('When the requestScopeAndPermissions is undefined, return false', () => {
-
       assert(!additionalScopeIsRequired(undefined, {}))
       assert(!additionalScopeIsRequired(null, {}))
     })
@@ -91,7 +90,6 @@ describe('Test tokenPermissionsPresent function', () => {
       }
       if (testRequestScopeAndPermissions) {
         testRequestScopeAndPermissions.tokenPermissions = { "test_permission": "update,create" }
-
          assert( ! additionalScopeIsRequired(testRequestScopeAndPermissions, userProfile))
       } else {
         expect.fail("has test data been changed ?");

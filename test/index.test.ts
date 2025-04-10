@@ -1,18 +1,20 @@
+import { Response } from 'express'
+import sinon from 'sinon'
+import { assert, expect } from 'chai'
+import { instance, mock, when } from 'ts-mockito'
 import { Session} from '@companieshouse/node-session-handler'
 import { SessionKey } from '@companieshouse/node-session-handler/lib/session/keys/SessionKey'
 import { ISignInInfo } from '@companieshouse/node-session-handler/lib/session/model/SessionInterfaces'
-import { assert, expect } from 'chai'
-import { Response } from 'express'
-import sinon from 'sinon'
-import { instance, mock, when } from 'ts-mockito'
 import { authMiddleware, AuthOptions } from '../src'
 import {
   generateRequest,
   generateResponse,
-  generateSignInInfo, generateSignInInfoAuthedForCompany
+  generateSignInInfo,
+  generateSignInInfoAuthedForCompany
 } from './mockGeneration'
 
 describe('Authentication Middleware', () => {
+
   const mockReturnUrl = 'accounts/signin?return_to=origin'
   const mockUserId = 'sA=='
 
@@ -51,7 +53,8 @@ describe('Authentication Middleware', () => {
 
   it('When the user is not logged in the middleware should not call next and should trigger redirect', () => {
     const unAuthedSession = mock(Session)
-    const mockRequest = generateRequest(instance(unAuthedSession))
+    //@ts-ignore
+    const mockRequest = generateRequest({ ...instance(unAuthedSession), data: {} })
 
     when(unAuthedSession.get<ISignInInfo>(SessionKey.SignInInfo)).thenReturn(generateSignInInfo(mockUserId, 0))
     authMiddleware(opts)(mockRequest, mockResponse, mockNext)
@@ -61,7 +64,8 @@ describe('Authentication Middleware', () => {
 
   it('When the user is logged in the middleware should call next', () => {
     const authedSession = mock(Session)
-    const mockRequest = generateRequest(instance(authedSession))
+    //@ts-ignore
+    const mockRequest = generateRequest({ ...instance(authedSession), data: {} })
 
     when(authedSession.get<ISignInInfo>(SessionKey.SignInInfo)).thenReturn(generateSignInInfo(mockUserId, 1))
     authMiddleware(opts)(mockRequest, mockResponse, mockNext)
@@ -70,6 +74,7 @@ describe('Authentication Middleware', () => {
 })
 
 describe('Authentication Middleware with company number', () => {
+
   const mockReturnUrl = 'accounts/signin?return_to=origin&company_number=12345678'
   const mockUserId = 'sA=='
 
@@ -92,7 +97,8 @@ describe('Authentication Middleware with company number', () => {
 
   it('When the user is not authenticated for company the middleware should not call next and should trigger redirect', () => {
     const authedSession = mock(Session)
-    const mockRequest = generateRequest(instance(authedSession))
+    // @ts-ignore
+    const mockRequest = generateRequest({ ...instance(authedSession), data: {} })
 
     when(authedSession.get<ISignInInfo>(SessionKey.SignInInfo)).thenReturn(generateSignInInfo(mockUserId, 1))
     authMiddleware(opts)(mockRequest, mockResponse, mockNext)
@@ -102,7 +108,8 @@ describe('Authentication Middleware with company number', () => {
 
   it('When the user is authenticated for company the middleware should call next', () => {
     const authedSession = mock(Session)
-    const mockRequest = generateRequest(instance(authedSession))
+    // @ts-ignore
+    const mockRequest = generateRequest({ ...instance(authedSession), data: {} })
 
     when(authedSession.get<ISignInInfo>(SessionKey.SignInInfo))
       .thenReturn(generateSignInInfoAuthedForCompany(mockUserId, 1, '12345678'))

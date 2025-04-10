@@ -1,18 +1,27 @@
-import { Session, SessionStore } from '@companieshouse/node-session-handler'
-import { SessionKey } from '@companieshouse/node-session-handler/lib/session/keys/SessionKey'
-import { assert } from 'chai'
 import { Response } from 'express'
 import sinon from 'sinon'
+import { assert } from 'chai'
 import { instance, mock, when } from 'ts-mockito'
-import { CsrfProtectionMiddleware, CsrfOptions, CsrfTokensMismatchError, MissingCsrfSessionToken, CsrfError, SessionUnsetError } from '../../src/csrf-protection'
+import { Session, SessionStore } from '@companieshouse/node-session-handler'
+import { SessionKey } from '@companieshouse/node-session-handler/lib/session/keys/SessionKey'
+import { Cookie } from '@companieshouse/node-session-handler/lib/session/model/Cookie'
+
 import {
     generateRequest,
     generateResponse,
 } from '../mockGeneration'
-import { Cookie } from '@companieshouse/node-session-handler/lib/session/model/Cookie'
 
+import {
+    CsrfError,
+    CsrfOptions,
+    SessionUnsetError,
+    CsrfTokensMismatchError,
+    MissingCsrfSessionToken,
+    CsrfProtectionMiddleware,
+} from '../../src/csrf-protection'
 
 describe("csrf-protection/middleware", () => {
+
     describe("CSRF Middleware enabled", () => {
         let redirectStub: sinon.SinonStub
         let opts: CsrfOptions
@@ -376,7 +385,7 @@ describe("csrf-protection/middleware", () => {
 
             assert(nextCalls.length === 1, "next has been called once");
             assert(typeof nextCalls[0] === "undefined", "next has been called with no args");
-            
+
             sinon.verify()
         })
 
@@ -447,6 +456,7 @@ describe("csrf-protection/middleware", () => {
         })
 
         describe("custom field", () => {
+
             it("can locate csrf token in field in body", () => {
                 const csrfToken = "0fb9a779-2262-410f-a075-7f1359f142b6";
                 const customParameterName = "custom-csrf-token-parameter"
@@ -477,6 +487,7 @@ describe("csrf-protection/middleware", () => {
     });
 
     describe("CSRF Middleware disabled", () => {
+
         let redirectStub: sinon.SinonStub
         let opts: CsrfOptions
         let mockResponse: Response
