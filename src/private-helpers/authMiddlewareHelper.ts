@@ -122,7 +122,7 @@ export const authMiddlewareHelper = (options: AuthOptions, requestScopeAndPermis
     console.log(`cidev-test > cookie-secret-exists: ${process?.env.COOKIE_SECRET ? 'exists' : 'missing'}`)
 
     return crypto
-        .createHash('sha512')
+        .createHash('sha1')
         .update(hashTarget, 'utf8')
         .digest('hex')
   }
