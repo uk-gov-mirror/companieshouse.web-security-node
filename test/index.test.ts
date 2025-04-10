@@ -1,10 +1,10 @@
+import { Response } from 'express'
+import sinon from 'sinon'
+import { assert, expect } from 'chai'
+import { instance, mock, when } from 'ts-mockito'
 import { Session} from '@companieshouse/node-session-handler'
 import { SessionKey } from '@companieshouse/node-session-handler/lib/session/keys/SessionKey'
 import { ISignInInfo } from '@companieshouse/node-session-handler/lib/session/model/SessionInterfaces'
-import { assert, expect } from 'chai'
-import { Response } from 'express'
-import sinon from 'sinon'
-import { instance, mock, when } from 'ts-mockito'
 import { authMiddleware, AuthOptions } from '../src'
 import {
   generateRequest,
@@ -14,6 +14,7 @@ import {
 } from './mockGeneration'
 
 describe('Authentication Middleware', () => {
+
   const mockReturnUrl = 'accounts/signin?return_to=origin'
   const mockUserId = 'sA=='
 
@@ -73,6 +74,7 @@ describe('Authentication Middleware', () => {
 })
 
 describe('Authentication Middleware with company number', () => {
+  
   const mockReturnUrl = 'accounts/signin?return_to=origin&company_number=12345678'
   const mockUserId = 'sA=='
 
