@@ -60,12 +60,17 @@ export const authMiddlewareHelper = (options: AuthOptions, requestScopeAndPermis
     }
 
     if (signedIn) {
-      if (computedSignature !== clientSignature) { // possible hijack detected
-        // @ts-ignore
-        req.session.data[`${SessionKey.ClientSig}`] = computedSignature
-        if (clientSignature.length) {
+      if (computedSignature !== clientSignature) {
+        if (!clientSignature.length) {
           // @ts-ignore
-          req.session.data[`${SessionKey.Hijacked}`] = 1
+          req.session.data[`${SessionKey.ClientSig}`] = computedSignature
+        } else {
+          // possible hijack detected
+          logger.info(`${appName} - possible hijack detected, forcing redirect to sign in page`)
+          logger.info(`${appName} - clientSignature: ${clientSignature}`)
+          logger.info(`${appName} - computedSignature: ${computedSignature}`)
+          logger.info(`${appName} - session_cookie_id": ${req.session?.data[SessionKey.Id]}`)
+          req.session.data = {}
           return res.redirect(redirectURI)
         }
       }
