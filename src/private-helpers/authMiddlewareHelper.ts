@@ -61,9 +61,10 @@ export const authMiddlewareHelper = (options: AuthOptions, requestScopeAndPermis
 
     if (signedIn) {
       if (computedSignature !== clientSignature) { // possible hijack detected
-        // @ts-ignore
-        req.session.data[`${SessionKey.ClientSig}`] = computedSignature
-        if (clientSignature.length) {
+        if (!clientSignature.length) {
+          // @ts-ignore
+          req.session.data[`${SessionKey.ClientSig}`] = computedSignature
+        } else {
           // @ts-ignore
           req.session.data[`${SessionKey.Hijacked}`] = 1
           return res.redirect(redirectURI)
