@@ -65,8 +65,8 @@ export const authMiddlewareHelper = (options: AuthOptions, requestScopeAndPermis
           // @ts-ignore
           req.session.data[`${SessionKey.ClientSig}`] = computedSignature
         } else {
-          // @ts-ignore
-          req.session.data[`${SessionKey.Hijacked}`] = 1
+          req.session.data = {}
+          //req.session.data[`${SessionKey.Hijacked}`] = 1
           return res.redirect(redirectURI)
         }
       }
