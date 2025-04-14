@@ -48,13 +48,6 @@ export const authMiddlewareHelper = (options: AuthOptions, requestScopeAndPermis
     const clientSignature: string = req.session?.data[SessionKey.ClientSig] ?? ''
     const computedSignature: string = computeSignatureFromRequest(req)
 
-    // debuggers for CIDEV only
-    console.log(`cidev-test > hijackFilter: ${hijackFilter}`)
-    console.log(`cidev-test > clientSignature: ${clientSignature}`)
-    console.log(`cidev-test > computedSignature: ${computedSignature}`)
-    console.log(`cidev-test > req.session.data`)
-    console.log(req?.session?.data)
-
     if (parseInt(hijackFilter, 10) === 1) {
       return res.redirect(redirectURI)
     }
@@ -104,7 +97,7 @@ export const authMiddlewareHelper = (options: AuthOptions, requestScopeAndPermis
     } else {
       logger.debug(`${appName} : userId=${userId}, No userProfileTokenPermissions present`)
     }
-    console.log(`cidev-test >> successful execution`)
+
     return next()
   }
 
@@ -120,12 +113,6 @@ export const authMiddlewareHelper = (options: AuthOptions, requestScopeAndPermis
   const computeSignatureFromRequest = (req: Request): string => {
     const clientIp = getClientIp(req)
     const hashTarget = `${req.headers['user-agent']}${clientIp}${process.env?.COOKIE_SECRET}`
-
-    // debuggers for CIDEV only
-    console.log(`cidev-test > clientIP: ${clientIp}`)
-    console.log(`cidev-test > user-agent: ${req.headers['user-agent']}`)
-    console.log(`cidev-test > cookie-secret-exists: ${process?.env.COOKIE_SECRET ? 'exists' : 'missing'}`)
-
     return crypto
         .createHash('sha1')
         .update(hashTarget, 'utf8')
@@ -133,12 +120,6 @@ export const authMiddlewareHelper = (options: AuthOptions, requestScopeAndPermis
   }
 
 const getClientIp = (req: Request) => {
-
-  // debuggers for CIDEV only
-  console.log(`cidev-test > x-forwarded-for: ${req.headers['x-forwarded-for']}`)
-  console.log(`cidev-test > socket-remote: ${req.socket?.remoteAddress}`)
-  console.log(`cidev-test > req.ip: ${req?.ip}`)
-
   let ipStr = ''
   if (!req.headers['x-forwarded-for']) {
     return req.socket?.remoteAddress
