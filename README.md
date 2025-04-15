@@ -116,6 +116,25 @@ token. This implements a
     following an unauthenticated action will fail. If your application is only
     authenticated this may not be as applicable.
 
+    <br>
+
+    To exclude CsrfProtectionMiddleware from specific paths:
+
+    for example the /limited-partnerships/healthcheck endpoint
+    ```typescript
+    const excludedPaths = /\/limited-partnerships\/((?!healthcheck).)*/;
+    ```
+
+    or, for the /limited-partnerships/healthcheck and /limited-partnerships/start
+    ```typescript
+    const excludedPaths = /\/limited-partnerships/((?!healthcheck|start).)*/;
+    ```
+
+    then add it to the middleware call
+    ```typescript
+    app.use(excludedPaths, csrfProtectionMiddleware);
+    ```
+
 3. Amend the `Nunjucks` configuration to add the third-party templates from this library:
 
     ```typescript
