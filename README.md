@@ -125,9 +125,14 @@ token. This implements a
     const excludedPaths = /\/limited-partnerships\/((?!healthcheck).)*/;
     ```
 
-    or, for the /limited-partnerships/healthcheck and /limited-partnerships/start
+    or, for the /limited-partnerships/healthcheck and /limited-partnerships/start end-points
     ```typescript
     const excludedPaths = /\/limited-partnerships/((?!healthcheck|start).)*/;
+    ```
+
+    or, for the /register-an-overseas-entity/healthcheck endpoint (where the base URL changes based on the type of web journey)
+    ```typescript
+    const excludedPaths = /^\/(?!register-an-overseas-entity\/healthcheck).*/;
     ```
 
     then add it to the middleware call
