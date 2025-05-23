@@ -117,4 +117,21 @@ describe('Authentication Middleware with company number', () => {
     assert(mockNext.calledOnce)
     assert(redirectStub.notCalled)
   })
+
+  it("When the user is authenticated for company and forceCompanyAuth is true the middleware should not call next and should trigger redirect", () => {
+    const forceReauthOptions = {
+     returnUrl: "origin",
+     chsWebUrl: "accounts",
+     companyNumber: "12345678",
+     forceCompanyAuthentication: true,
+    };
+    const authedSession = mock(Session);
+    // @ts-ignore
+    const mockRequest = generateRequest({...instance(authedSession), data: {} });
+
+    when(authedSession.get<ISignInInfo>(SessionKey.SignInInfo)).thenReturn(generateSignInInfoAuthedForCompany(mockUserId, 1, "12345678"));
+    authMiddleware(forceReauthOptions)(mockRequest, mockResponse, mockNext);
+    assert(redirectStub.calledOnceWith(mockReturnUrl));
+    assert(mockNext.notCalled);
+  });
 })
