@@ -118,61 +118,23 @@ describe('Authentication Middleware with company number', () => {
     assert(redirectStub.notCalled)
   })
 
-it("Should redirect with save_association=true and force_company_auth=true when forceCompanyAuth is true and saveAssociation is true", () => {
-    const mockForceCompanyAuthReturnUrl = 'accounts/signin?return_to=origin&company_number=12345678&force_company_auth=true&save_association=true'
+it("Should redirect with force-auth-code=true when forceAuthCode is true when the user is authenticated for company", () => {
+    const expectedAuthReturnUrl = 'accounts/signin?return_to=origin&company_number=12345678&force-auth-code=true'
 
-    const forceReauthOptions = {
+    const forceAuthCodeOptions = {
      returnUrl: "origin",
      chsWebUrl: "accounts",
      companyNumber: "12345678",
-     forceCompanyAuthentication: true,
-     saveAssociation: true
+     forceAuthCode: true
     };
     const authedSession = mock(Session);
     // @ts-ignore
     const mockRequest = generateRequest({...instance(authedSession), data: {} });
 
     when(authedSession.get<ISignInInfo>(SessionKey.SignInInfo)).thenReturn(generateSignInInfoAuthedForCompany(mockUserId, 1, "12345678"));
-    authMiddleware(forceReauthOptions)(mockRequest, mockResponse, mockNext);
-    assert(redirectStub.calledOnceWith(mockForceCompanyAuthReturnUrl));
+    authMiddleware(forceAuthCodeOptions)(mockRequest, mockResponse, mockNext);
+    assert(redirectStub.calledOnceWith(expectedAuthReturnUrl));
     assert(mockNext.notCalled);
   });
 
-it("When the user is authenticated for company, forceCompanyAuth=true and saveAssociation is missing the middleware should trigger redirect with correct url", () => {
-    
-    const mockForceCompanyAuthReturnUrl = 'accounts/signin?return_to=origin&company_number=12345678&force_company_auth=true&save_association=false'
-
-    const forceReauthOptionsWithoutSaveAssociation = {
-     returnUrl: "origin",
-     chsWebUrl: "accounts",
-     companyNumber: "12345678",
-     forceCompanyAuthentication: true,
-    };
-    const authedSession = mock(Session);
-    // @ts-ignore
-    const mockRequest = generateRequest({...instance(authedSession), data: {} });
-
-    when(authedSession.get<ISignInInfo>(SessionKey.SignInInfo)).thenReturn(generateSignInInfoAuthedForCompany(mockUserId, 1, "12345678"));
-    authMiddleware(forceReauthOptionsWithoutSaveAssociation)(mockRequest, mockResponse, mockNext);
-    assert(redirectStub.calledOnceWith(mockForceCompanyAuthReturnUrl));
-    assert(mockNext.notCalled);
-  });
-
-it("Should redirect with default company auth URL when forceCompanyAuth is false and user is not authenticated for company", () => {
-    
-    const forceReauthOptionsForceAuthIsFalse = {
-     returnUrl: "origin",
-     chsWebUrl: "accounts",
-     companyNumber: "12345678",
-     forceCompanyAuthentication: false,
-    };
-    const authedSession = mock(Session);
-    // @ts-ignore
-    const mockRequest = generateRequest({...instance(authedSession), data: {} });
-
-    when(authedSession.get<ISignInInfo>(SessionKey.SignInInfo)).thenReturn(generateSignInInfo(mockUserId, 1))
-    authMiddleware(forceReauthOptionsForceAuthIsFalse)(mockRequest, mockResponse, mockNext);
-    assert(redirectStub.calledOnceWith(mockReturnUrl));
-    assert(mockNext.notCalled);
-});
 })
