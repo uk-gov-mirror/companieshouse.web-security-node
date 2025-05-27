@@ -79,8 +79,10 @@ export const authMiddlewareHelper = (options: AuthOptions, requestScopeAndPermis
       return res.redirect(redirectURI)
     }
 
-    if (options.companyNumber && options.forceCompanyAuthentication) {
-      logger.info(`${appName} - handler: userId=${userId}, forceCompanyAuthentication set to true for ${options.companyNumber}... Redirecting to: ${redirectURI}`)
+    if (options.companyNumber && options.forceCompanyAuthentication === true) {
+      const saveAssociation = options.saveAssociation === true;
+      redirectURI = redirectURI.concat(`&force_company_auth=true&save_association=${saveAssociation}`)
+      logger.info(`${appName} - handler: userId=${userId}, forceCompanyAuthentication=true, saveAssociation=${saveAssociation} for ${options.companyNumber}... Redirecting to: ${redirectURI}`)
       return res.redirect(redirectURI)
     }
 
