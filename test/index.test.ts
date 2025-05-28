@@ -137,4 +137,21 @@ it("Should redirect with force-auth-code=true when forceAuthCode is true when th
     assert(mockNext.notCalled);
   });
 
+it("Should redirect with force-auth-code=true when forceAuthCode is true when the user is not authenticated for company", () => {
+    const expectedAuthReturnUrl = 'accounts/signin?return_to=origin&company_number=12345678&force-auth-code=true'
+    const authedSession = mock(Session)
+    const forceAuthCodeOptions = {
+     returnUrl: "origin",
+     chsWebUrl: "accounts",
+     companyNumber: "12345678",
+     forceAuthCode: true
+    };
+    // @ts-ignore
+    const mockRequest = generateRequest({ ...instance(authedSession), data: {} })
+     when(authedSession.get<ISignInInfo>(SessionKey.SignInInfo)).thenReturn(generateSignInInfo(mockUserId, 1))
+    authMiddleware(forceAuthCodeOptions)(mockRequest, mockResponse, mockNext)
+    assert(redirectStub.calledOnceWith(expectedAuthReturnUrl))
+    assert(mockNext.notCalled)
+  })
+
 })
