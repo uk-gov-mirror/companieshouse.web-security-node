@@ -10,6 +10,7 @@ export interface AuthOptions {
   chsWebUrl: string
   companyNumber?: string
   acspNumber?:string
+  forceAuthCode?: boolean
 }
 
 export const authMiddleware = (options: AuthOptions): RequestHandler => (
