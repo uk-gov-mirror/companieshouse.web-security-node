@@ -80,9 +80,14 @@ export const authMiddlewareHelper = (options: AuthOptions, requestScopeAndPermis
     }
 
     if (options.companyNumber && options.forceAuthCode === true) {
-      redirectURI = redirectURI.concat(`&force-auth-code=true`)
-      logger.info(`${appName} - handler: userId=${userId}, forceAuthCode=true, for ${options.companyNumber}... Redirecting to: ${redirectURI}`)
-      return res.redirect(redirectURI)
+        if (isAuthorisedForCompany(options.companyNumber, signInInfo) && req.session?.data.signin_info.justAuthenticated) {
+            delete req.session?.data.signin_info.justAuthenticated;
+            return next()
+        } else {
+            redirectURI = redirectURI.concat(`&force-auth-code=true`)
+            logger.info(`${appName} - handler: userId=${userId}, forceAuthCode=true, for ${options.companyNumber}... Redirecting to: ${redirectURI}`)
+            return res.redirect(redirectURI)
+        }
     }
 
     if (options.companyNumber && !isAuthorisedForCompany(options.companyNumber, signInInfo)) {
