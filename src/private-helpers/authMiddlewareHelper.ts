@@ -79,8 +79,8 @@ export const authMiddlewareHelper = (options: AuthOptions, requestScopeAndPermis
       return res.redirect(redirectURI)
     }
 
-    if (options.companyNumber && options.forceAuthCode === true) {
-      redirectURI = redirectURI.concat(`&force-auth-code=true`)
+    if (options.companyNumber && options.forceAuthCode === true && !hasUpgradedCompanyAuth(options.companyNumber, signInInfo, userProfile)) {
+      redirectURI = redirectURI.concat(`&company_force_auth=true`)
       logger.info(`${appName} - handler: userId=${userId}, forceAuthCode=true, for ${options.companyNumber}... Redirecting to: ${redirectURI}`)
       return res.redirect(redirectURI)
     }
@@ -136,3 +136,17 @@ const getClientIp = (req: Request) => {
 
 }
 
+function hasUpgradedCompanyAuth(companyNumber: string, signInInfo: ISignInInfo, userProfile: IUserProfile): boolean {
+    if (!isAuthorisedForCompany(companyNumber, signInInfo)) {
+        return false
+    }
+
+    const tokenPermissions = userProfile[UserProfileKeys.TokenPermissions]
+    const validUntil = Number(tokenPermissions?.company_upgraded_auth_valid_until)
+
+    if (isNaN(validUntil) || validUntil <= Math.floor(Date.now() / 1000)) {
+        return false
+    }
+
+    return true
+}
