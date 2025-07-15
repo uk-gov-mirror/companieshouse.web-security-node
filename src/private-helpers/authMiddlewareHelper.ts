@@ -26,6 +26,11 @@ export const authMiddlewareHelper = (options: AuthOptions, requestScopeAndPermis
       throw new Error('Required Field CHS Web URL not set')
     }
 
+    if (options.forceAuthCode === true && !options.companyNumber) {
+      logger.error(`${appName} - handler: Required Field company number not set`)
+      throw new Error('Required Field missing: forceAuthCode is true but company number not set')
+    }
+
     let redirectURI = `${options.chsWebUrl}/signin?return_to=${options.returnUrl}`
 
     if(options.companyNumber) {
@@ -141,12 +146,12 @@ function hasUpgradedCompanyAuth(companyNumber: string, signInInfo: ISignInInfo, 
         return false
     }
 
-    const tokenPermissions = userProfile[UserProfileKeys.TokenPermissions]
-    const validUntil = Number(tokenPermissions?.company_upgraded_auth_valid_until)
+    const validUntilStr = userProfile?.[UserProfileKeys.TokenPermissions]?.company_upgraded_auth_valid_until
+    const validUntilNum = Number(validUntilStr)
 
-    if (isNaN(validUntil) || validUntil <= Math.floor(Date.now() / 1000)) {
+    if (!validUntilStr || isNaN(validUntilNum)) {
         return false
     }
 
-    return true
+    return validUntilNum > Math.floor(Date.now() / 1000)
 }

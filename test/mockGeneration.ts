@@ -57,6 +57,19 @@ export function generateSignInInfoAuthedForScope(
   return signInInfo
 }
 
+export function generateSignInInfoWithUpgradedCompanyAuth(mockUserId: string, signedIn: number, companyNumber: string, timeStamp:string): ISignInInfo {
+  return {
+    company_number: companyNumber,
+    signed_in: signedIn,
+    user_profile: {
+      id: mockUserId,
+      [UserProfileKeys.TokenPermissions]: {
+        "company_upgraded_auth_valid_until": timeStamp,
+      }
+    }
+  }
+}
+
 export function generateRequest(
     requestSession?: Session,
     csrfTokenInHeader?: string,
