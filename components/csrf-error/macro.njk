@@ -1,19 +1,23 @@
-{%- macro csrfError(params) -%}
-<div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
-        <h1 class="govuk-heading-l">Sorry, something went wrong</h1>
+{% macro csrfErrorContent() %}
+    <h1 class="govuk-heading-l">Sorry, something went wrong</h1>
 
-        <p class="govuk-body">We have not been able to save the information you submitted on the previous screen.
-        This may be because the page was inactive for too long, or because of a technical issue.</p>
+    <p class="govuk-body">We have not been able to save the information you submitted on the previous screen.
+    This may be because the page was inactive for too long, or because of a technical issue.</p>
 
-        <p class="govuk-body">Try the following:</p>
+    <p class="govuk-body">Try the following:</p>
 
-        <ul class="govuk-list govuk-list--bullet">
-            <li>use the back link to return to the previous screen and resubmit the information</li>
-            <li>sign out of the service, and then sign back in</li>
-        </ul>
+    <ul class="govuk-list govuk-list--bullet">
+        <li>use the back link to return to the previous screen and resubmit the information</li>
+        <li>sign out of the service, and then sign back in</li>
+    </ul>
 
-        <p class="govuk-body">If the problem continues, <a href="https://www.gov.uk/contact-companies-house">contact us</a> for help.</p>
+    <p class="govuk-body">If the problem continues, <a href="https://www.gov.uk/contact-companies-house">contact us</a> for help.</p>
+{%- endmacro -%}
+
+{%- macro csrfError() -%}
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            {{ csrfErrorContent() }}
+        </div>
     </div>
-</div>
 {%- endmacro -%}
