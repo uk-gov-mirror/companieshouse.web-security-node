@@ -30,11 +30,12 @@ export const authMiddlewareHelper = (options: AuthOptions, requestScopeAndPermis
 
     if(options.companyNumber) {
       redirectURI = redirectURI.concat(`&company_number=${options.companyNumber}`)
-
-     if (options.disableSaveCompanyCheckbox === true) {
-        redirectURI = redirectURI.concat(`&company_disable_add_checkbox=true`)
-      }
     }
+
+    if (options.companyNumber && options.disableSaveCompanyCheckbox === true) {
+      redirectURI = redirectURI.concat(`&company_disable_add_checkbox=true`);
+    }
+
     if (!req.session)  {
       if(requestScopeAndPermissions) {
         redirectURI = redirectURI.concat(`&additional_scope=${requestScopeAndPermissions.scope}`)
