@@ -118,7 +118,7 @@ describe('Authentication Middleware with company number', () => {
     assert(redirectStub.notCalled)
   })
 
-  it("Should redirect with company_disable_add_checkbox=true when disableSaveCompanyCheckbox is true", () => {
+  it("Should redirect with company_disable_add_checkbox=true when disableSaveCompanyCheckbox in AuthOptions is true", () => {
     const expectedAuthReturnUrl = 'accounts/signin?return_to=origin&company_number=12345678&company_disable_add_checkbox=true'
 
     const authOptions = {
