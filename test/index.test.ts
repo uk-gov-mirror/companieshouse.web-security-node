@@ -118,4 +118,42 @@ describe('Authentication Middleware with company number', () => {
     assert(redirectStub.notCalled)
   })
 
+  it("Should redirect with company_disable_add_checkbox=true when disableSaveCompanyCheckbox is true", () => {
+    const expectedAuthReturnUrl = 'accounts/signin?return_to=origin&company_number=12345678&company_disable_add_checkbox=true'
+
+    const authOptions = {
+     returnUrl: "origin",
+     chsWebUrl: "accounts",
+     companyNumber: "12345678",
+     disableSaveCompanyCheckbox: true
+    };
+    const authedSession = mock(Session);
+    // @ts-ignore
+    const mockRequest = generateRequest({...instance(authedSession), data: {} });
+
+     when(authedSession.get<ISignInInfo>(SessionKey.SignInInfo)).thenReturn(generateSignInInfo(mockUserId, 1))
+    authMiddleware(authOptions)(mockRequest, mockResponse, mockNext)
+    assert(redirectStub.calledOnceWith(expectedAuthReturnUrl))
+    assert(mockNext.notCalled)
+  });
+  
+  it("Should redirect without company_disable_add_checkbox query parm when disableSaveCompanyCheckbox is false", () => {
+    const expectedAuthReturnUrl = 'accounts/signin?return_to=origin&company_number=12345678'
+
+    const authOptions = {
+     returnUrl: "origin",
+     chsWebUrl: "accounts",
+     companyNumber: "12345678",
+     disableSaveCompanyCheckbox: false
+    };
+    const authedSession = mock(Session);
+    // @ts-ignore
+    const mockRequest = generateRequest({...instance(authedSession), data: {} });
+
+     when(authedSession.get<ISignInInfo>(SessionKey.SignInInfo)).thenReturn(generateSignInInfo(mockUserId, 1))
+    authMiddleware(authOptions)(mockRequest, mockResponse, mockNext)
+    assert(redirectStub.calledOnceWith(expectedAuthReturnUrl))
+    assert(mockNext.notCalled)
+  });
+
 })
