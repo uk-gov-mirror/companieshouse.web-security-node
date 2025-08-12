@@ -31,8 +31,8 @@ export const authMiddlewareHelper = (
     }
 
     const signInInfo: ISignInInfo = req.session.get<ISignInInfo>(SessionKey.SignInInfo) || {};
-    const signedIn: boolean = signInInfo![SignInInfoKeys.SignedIn] === 1;
-    const userProfile: IUserProfile = signInInfo![SignInInfoKeys.UserProfile] || {};
+    const signedIn: boolean = signInInfo[SignInInfoKeys.SignedIn] === 1;
+    const userProfile: IUserProfile = signInInfo[SignInInfoKeys.UserProfile] || {};
     const userId: string | undefined = userProfile?.id;
     const hijackFilter: string = req.session?.data[SessionKey.Hijacked] ?? '0';
     const clientSignature: string = req.session?.data[SessionKey.ClientSig] ?? '';
