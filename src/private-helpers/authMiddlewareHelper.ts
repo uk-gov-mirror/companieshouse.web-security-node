@@ -26,11 +26,8 @@ export const authMiddlewareHelper = (options: AuthOptions, requestScopeAndPermis
       throw new Error('Required Field CHS Web URL not set')
     }
 
-    let redirectURI = `${options.chsWebUrl}/signin?return_to=${options.returnUrl}`
+    let redirectURI = buildRedirectUri(options);
 
-    if(options.companyNumber) {
-      redirectURI = redirectURI.concat(`&company_number=${options.companyNumber}`)
-    }
 
     if (!req.session)  {
       if(requestScopeAndPermissions) {
@@ -127,6 +124,16 @@ const getClientIp = (req: Request) => {
     ipStr = Array.isArray(req.headers['x-forwarded-for']) ? req.headers['x-forwarded-for'].toString() : req.headers['x-forwarded-for']
     return ipStr.split(',').shift()
   }
-
+  
 }
 
+function buildRedirectUri(options: AuthOptions): string {
+    let uri = `${options.chsWebUrl}/signin?return_to=${options.returnUrl}`;
+    if (options.companyNumber) {
+        uri += `&company_number=${options.companyNumber}`;
+        if (options.disableSaveCompanyCheckbox === true) {
+            uri += `&company_disable_add_checkbox=true`;
+        }
+    }
+    return uri;
+}
