@@ -124,6 +124,7 @@ const getClientIp = (req: Request) => {
     ipStr = Array.isArray(req.headers['x-forwarded-for']) ? req.headers['x-forwarded-for'].toString() : req.headers['x-forwarded-for']
     return ipStr.split(',').shift()
   }
+  
 }
 
 function buildRedirectUri(options: AuthOptions): string {
