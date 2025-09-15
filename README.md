@@ -15,6 +15,10 @@ Security for web applications in node
       - [Exceptions](#exceptions)
   - [Code Structure](#code-structure)
 
+## Compatible Node versions
+
+This package has been upgraded to be compatible with Node v24. Presently, it's backward compatible with v20 and v18 but compatibility is primarily required for v24 as all CH Node services are in the process of being upgraded to v24.
+
 ## Authorisation
 
 With the introduction of Verification for certain business functions, the way `*-web` applications use authentication is now in two main categories - see [Integrating Verification into the Authentication Service scopes and permissions](https://companieshouse.atlassian.net/wiki/spaces/IDV/pages/4538695803/Integrating+Verification+into+the+Authentication+Service+scopes+and+permissions#oauth-web-(and-oauth-signin-java-library)) for background information.
