@@ -13,10 +13,6 @@ build:
 	npm i
 	npm run build
 
-.PHONY: security-check
-security-check:
-	npm audit
-
 .PHONY: lint
 lint:
 	npm run lint
