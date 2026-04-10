@@ -52,11 +52,12 @@
   },
   "overrides": {
     "diff": "^8.0.3",
+    "glob": "11.1.0",
     "glob-parent": "^6.0.2",
     "js-yaml": "^4.1.1",
+    "minimatch": "10.2.4",
     "qs": "^6.15",
-    "lodash": "^4.17.23",
-    "minimatch": "^10.2.1"
+    "serialize-javascript": "^7.0.5"
   },
   "files": [
     "components",
