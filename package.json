@@ -42,7 +42,7 @@
     "eslint": "^9.39.2",
     "express": "^4.22.1",
     "mocha": "^11.7.2",
-    "nyc": "^17.0.0",
+    "nyc": "^18.0.0",
     "sinon": "^21.0.1",
     "sonarqube-scanner": "^3.5.0",
     "ts-mockito": "^2.5.0",
@@ -55,7 +55,7 @@
     "glob": "11.1.0",
     "glob-parent": "^6.0.2",
     "js-yaml": "^4.1.1",
-    "minimatch": "10.2.4",
+    "minimatch": "10.2.5",
     "qs": "^6.15",
     "serialize-javascript": "^7.0.5"
   },
