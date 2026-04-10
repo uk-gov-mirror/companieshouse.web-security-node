@@ -21,6 +21,10 @@ lint:
 test:
 	npm run test
 
+.PHONY: test-unit
+test-unit:
+	npm run test:coverage
+
 .PHONY: sonar
 sonar: 
 	npm run coverage:report
