@@ -1,11 +1,16 @@
 export {
     acspProfileCreateAuthMiddleware,
-} from "./acspProfileCreateAuthMiddleware";
+} from './acspProfileCreateAuthMiddleware'
 
 export {
     acspManageUsersAuthMiddleware,
-} from "./acspManageUsersAuthMiddleware";
+} from './acspManageUsersAuthMiddleware'
 
 export {
-    InvalidAcspNumberError
-} from "./errors";
+    userOneLoginDirectAuthMiddleware
+} from './userOneLoginDirectAuthMiddleware'
+
+export {
+   InvalidAcspNumberError
+} from './errors'
+
