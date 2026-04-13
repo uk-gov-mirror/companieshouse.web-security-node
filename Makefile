@@ -13,10 +13,6 @@ build:
 	npm i
 	npm run build
 
-.PHONY: security-check
-security-check:
-	npm audit
-
 .PHONY: lint
 lint:
 	npm run lint
@@ -24,6 +20,10 @@ lint:
 .PHONY: test
 test:
 	npm run test
+
+.PHONY: test-unit
+test-unit:
+	npm run test:coverage
 
 .PHONY: sonar
 sonar: 
@@ -45,8 +45,8 @@ endif
 	cd $(tmpdir) && zip -r ../$(artifact_name)-$(version).zip .
 	rm -rf $(tmpdir)
 
-.PHONY: security-check
-security-check:
+.PHONY: dependency-check
+dependency-check:
 	npm audit
 
 .PHONY: dist
