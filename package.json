@@ -10,7 +10,7 @@
   "repository": "git@github.com:companieshouse/web-security-node.git",
   "license": "MIT",
   "scripts": {
-    "test": "mocha 'test/**/*.test.ts'",
+    "test": "nyc --reporter=lcov --reporter=text mocha 'test/**/*.test.ts'",
     "build": "rm -rf ./dist; tsc",
     "lint": "eslint 'src/*.ts' 'src/**/*.ts' 'test/**/*.test.ts'",
     "lint:fix": "eslint 'src/*.ts' 'src/**/*.ts' 'test/**/*.test.ts' --fix",

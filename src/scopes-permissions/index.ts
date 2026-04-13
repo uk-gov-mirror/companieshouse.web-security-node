@@ -7,5 +7,9 @@ export {
 } from "./acspManageUsersAuthMiddleware";
 
 export {
+    userOneLoginDirectAuthMiddleware
+} from "./userOneLoginDirectAuthMiddleware";
+
+export {
     InvalidAcspNumberError
 } from "./errors";
